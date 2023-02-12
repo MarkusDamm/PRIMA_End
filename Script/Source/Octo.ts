@@ -10,9 +10,11 @@ namespace Script {
     protected textureSrc: string = "./Images/ALTTP_Octo16x16.png";
     protected animations: ƒAid.SpriteSheetAnimations = {};
 
-    private target: ƒ.Vector2;
+    private target: ƒ.Vector3;
+    private targetUpdateTimeout: Timeout;
 
-    constructor() {
+
+    constructor(_spawnPosition: ƒ.Vector3) {
       super("Octo", new ƒ.Vector2(16, 16));
 
       this.speed = speed;
@@ -23,12 +25,27 @@ namespace Script {
       this.spriteNode.addComponent(new ƒ.ComponentTransform);
       this.appendChild(this.spriteNode);
 
-      this.mtxLocal.translateX(3);
-      this.mtxLocal.translateY(0);
+      this.mtxLocal.translate(_spawnPosition);
+      console.log("Octo Spawn", _spawnPosition);
+
+      this.targetUpdateTimeout = { timeoutID: 0, duration: 0 };
+      this.updateTarget();
     }
 
-    public move(): void {
+    protected move(_deltaTime: number): void {
+      let dir: ƒ.Vector3 = ƒ.Vector3.DIFFERENCE(this.target, this.mtxLocal.translation);
+      dir.normalize(this.speed);
+      dir.scale(_deltaTime)
+      this.mtxLocal.translateX(dir.x);
+      this.mtxLocal.translateY(dir.y);
+    }
 
+    private updateTarget(): void {
+      this.target = flame.mtxLocal.translation;
+
+      this.targetUpdateTimeout.timeoutID = setTimeout(() => {
+        this.updateTarget();
+      }, 2500);
     }
 
     attack(): void {
@@ -43,8 +60,8 @@ namespace Script {
       throw new Error("Method not implemented.");
     }
 
-    public update(): void {
-      this.move();
+    public update(_deltaTime: number): void {
+      this.move(_deltaTime);
     }
 
     public async initializeAnimations(): Promise<void> {

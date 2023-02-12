@@ -30,25 +30,22 @@ namespace Script {
     constructor(_name: string, _spriteDimensions: ƒ.Vector2) {
       super(_name);
       this.addComponent(new ƒ.ComponentTransform);
-      this.mtxLocal.translateZ(1);
+      // this.mtxLocal.translation.z = 1;
       this.hitbox = ƒ.Vector2.SCALE(_spriteDimensions, 1 / 32);
       console.log(this.hitbox);
 
     }
 
-    public abstract move(): void;
+    // protected abstract move(): void;
     abstract attack(): void;
-    public takeDamage(_sourcePower: number, _sourcePos: ƒ.Vector2 | ƒ.Vector3): void {
+    public takeDamage(_sourcePower: number, _sourcePos: ƒ.Vector3): void {
       if (!this.hasIFrames) {
-        if (_sourcePos.z) {
-          _sourcePos.toVector2();
-        }
 
         this.health -= _sourcePower;
       }
     }
     abstract die(): void;
-    public abstract update(): void;
+    public abstract update(_deltaTime: number): void;
     public abstract initializeAnimations(): Promise<void>;
 
     /**

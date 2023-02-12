@@ -22,15 +22,12 @@ var Script;
             */
             this.resolution = 16;
             this.addComponent(new ƒ.ComponentTransform);
-            this.mtxLocal.translateZ(1);
+            // this.mtxLocal.translation.z = 1;
             this.hitbox = ƒ.Vector2.SCALE(_spriteDimensions, 1 / 32);
             console.log(this.hitbox);
         }
         takeDamage(_sourcePower, _sourcePos) {
             if (!this.hasIFrames) {
-                if (_sourcePos.z) {
-                    _sourcePos.toVector2();
-                }
                 this.health -= _sourcePower;
             }
         }
@@ -172,9 +169,10 @@ var Script;
             let light = new ƒ.LightPoint(ƒ.Color.CSS("white"));
             let cmpLight = new ƒ.ComponentLight(light);
             this.lightNode.addComponent(cmpLight);
-            this.lightNode.mtxLocal.translateZ(1);
+            // this.lightNode.mtxLocal.translateZ(1);
             this.lightNode.mtxLocal.scale(ƒ.Vector3.ONE(20));
             this.appendChild(this.lightNode);
+            this.hitTimeout = { timeoutID: 0, duration: 0 };
         }
         get getSpeed() {
             return this.speed;
@@ -193,18 +191,20 @@ var Script;
         }
         takeDamage(_sourcePower, _sourcePos) {
             super.takeDamage(_sourcePower, _sourcePos);
-            this.startIFrames(_sourcePower * 1000);
+            if (!this.hasIFrames) {
+                this.startIFrames(_sourcePower * 1000);
+            }
         }
         startIFrames(_timeoutDuration) {
             this.hasIFrames = true;
-            if (this.timeout.duration > _timeoutDuration) {
+            if (this.hitTimeout.duration > _timeoutDuration) {
                 return;
             }
-            clearTimeout(this.timeout.timeoutID);
-            this.timeout.timeoutID = setTimeout(() => {
+            clearTimeout(this.hitTimeout.timeoutID);
+            this.hitTimeout.timeoutID = setTimeout(() => {
                 this.hasIFrames = false;
             }, _timeoutDuration);
-            this.timeout.duration = _timeoutDuration;
+            this.hitTimeout.duration = _timeoutDuration;
         }
         update() {
             this.move();
@@ -229,9 +229,9 @@ var Script;
                         this.chooseAnimation(Frames.Left);
                 }
             }
-            this.timeout.duration--;
-            if (this.timeout.duration < 0) {
-                this.timeout = { timeoutID: 0, duration: 0 };
+            this.hitTimeout.duration--;
+            if (this.hitTimeout.duration < 0) {
+                this.hitTimeout = { timeoutID: 0, duration: 0 };
             }
         }
         async initializeAnimations() {
@@ -349,24 +349,43 @@ var Script;
         Script.Control.getInstance();
         Script.flame.initializeAnimations();
         branch.appendChild(Script.flame);
-        characters.push(Script.flame);
-        addEnemy();
+        // characters.push(flame);
+        addEnemy(10);
         ƒ.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, update);
         ƒ.Loop.start(); // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
     }
-    function addEnemy() {
-        let enemy = new Script.Octo();
-        enemy.initializeAnimations();
-        branch.appendChild(enemy);
-        characters.push(enemy);
+    function addEnemy(_amount) {
+        for (let index = 0; index < _amount; index++) {
+            let randomX;
+            if (Math.random() - 0.5 < 0)
+                randomX = randomNumber(-stageDimension.x / 2, -stageDimension.x / 4);
+            else
+                randomX = randomNumber(stageDimension.x / 4, stageDimension.x / 2);
+            let randomY;
+            if (Math.random() - 0.5 < 0)
+                randomY = randomNumber(-stageDimension.y / 2, -stageDimension.y / 4);
+            else
+                randomY = randomNumber(stageDimension.y / 4, stageDimension.y / 2);
+            let randomPos = new ƒ.Vector3(randomX, randomY);
+            let enemy = new Script.Octo(randomPos);
+            enemy.initializeAnimations();
+            branch.appendChild(enemy);
+            characters.push(enemy);
+        }
+    }
+    function randomNumber(_lowEnd, _highEnd) {
+        let randomNumber = Math.floor(Math.random() * (_highEnd - _lowEnd));
+        randomNumber += _lowEnd;
+        return randomNumber;
     }
     function update(_event) {
         let deltaTime = ƒ.Loop.timeFrameGame / 1000;
         // update Control, which also moves the camera
         Script.Control.getInstance().update(deltaTime);
         // update Character
+        Script.flame.update();
         for (const character of characters) {
-            character.update();
+            character.update(deltaTime);
         }
         checkHitbox();
         // ƒ.Physics.simulate();  // if physics is included and used
@@ -375,9 +394,9 @@ var Script;
     }
     function checkHitbox() {
         for (const character of characters) {
-            if (character == Script.flame) {
-                continue;
-            }
+            // if (character == flame) {
+            //   continue;
+            // }
             let posDifference = ƒ.Vector3.DIFFERENCE(Script.flame.mtxLocal.translation, character.mtxLocal.translation);
             posDifference = posDifference.toVector2();
             if (posDifference.magnitude < 5) {
@@ -409,6 +428,7 @@ var Script;
                 floorTile.addComponent(new ƒ.ComponentTransform);
                 floorTile.mtxLocal.translateX(x);
                 floorTile.mtxLocal.translateY(y);
+                floorTile.mtxLocal.translateZ(-1);
                 floorTile.mtxLocal.scaleX(2);
                 floorTile.mtxLocal.scaleY(2);
                 // add SpriteMesh
@@ -446,7 +466,7 @@ var Script;
     let health = 5;
     let power = 1;
     class Octo extends Script.Character {
-        constructor() {
+        constructor(_spawnPosition) {
             super("Octo", new ƒ.Vector2(16, 16));
             this.textureSrc = "./Images/ALTTP_Octo16x16.png";
             this.animations = {};
@@ -456,10 +476,23 @@ var Script;
             this.spriteNode = new ƒAid.NodeSprite("FlameSprite");
             this.spriteNode.addComponent(new ƒ.ComponentTransform);
             this.appendChild(this.spriteNode);
-            this.mtxLocal.translateX(3);
-            this.mtxLocal.translateY(0);
+            this.mtxLocal.translate(_spawnPosition);
+            console.log("Octo Spawn", _spawnPosition);
+            this.targetUpdateTimeout = { timeoutID: 0, duration: 0 };
+            this.updateTarget();
         }
-        move() {
+        move(_deltaTime) {
+            let dir = ƒ.Vector3.DIFFERENCE(this.target, this.mtxLocal.translation);
+            dir.normalize(this.speed);
+            dir.scale(_deltaTime);
+            this.mtxLocal.translateX(dir.x);
+            this.mtxLocal.translateY(dir.y);
+        }
+        updateTarget() {
+            this.target = Script.flame.mtxLocal.translation;
+            this.targetUpdateTimeout.timeoutID = setTimeout(() => {
+                this.updateTarget();
+            }, 2500);
         }
         attack() {
         }
@@ -469,8 +502,8 @@ var Script;
         die() {
             throw new Error("Method not implemented.");
         }
-        update() {
-            this.move();
+        update(_deltaTime) {
+            this.move(_deltaTime);
         }
         async initializeAnimations() {
             let texture = new ƒ.TextureImage();

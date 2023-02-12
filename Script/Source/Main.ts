@@ -79,20 +79,38 @@ namespace Script {
     Control.getInstance();
     flame.initializeAnimations();
     branch.appendChild(flame);
-    characters.push(flame);
+    // characters.push(flame);
 
-    addEnemy();
+    addEnemy(10);
 
     ƒ.Loop.addEventListener(ƒ.EVENT.LOOP_FRAME, update);
 
     ƒ.Loop.start();  // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
   }
 
-  function addEnemy(): void {
-    let enemy: Octo = new Octo();
-    enemy.initializeAnimations();
-    branch.appendChild(enemy);
-    characters.push(enemy);
+  function addEnemy(_amount: number): void {
+    for (let index: number = 0; index < _amount; index++) {
+      let randomX: number;
+      if (Math.random() - 0.5 < 0) randomX = randomNumber(-stageDimension.x / 2, -stageDimension.x / 4);
+      else randomX = randomNumber(stageDimension.x / 4, stageDimension.x / 2);
+
+      let randomY: number;
+      if (Math.random() - 0.5 < 0) randomY = randomNumber(-stageDimension.y / 2, -stageDimension.y / 4);
+      else randomY = randomNumber(stageDimension.y / 4, stageDimension.y / 2);
+
+      let randomPos: ƒ.Vector3 = new ƒ.Vector3(randomX, randomY);
+
+      let enemy: Octo = new Octo(randomPos);
+      enemy.initializeAnimations();
+      branch.appendChild(enemy);
+      characters.push(enemy);
+    }
+  }
+
+  function randomNumber(_lowEnd: number, _highEnd: number): number {
+    let randomNumber: number = Math.floor(Math.random() * (_highEnd - _lowEnd));
+    randomNumber += _lowEnd;
+    return randomNumber;
   }
 
   function update(_event: Event): void {
@@ -100,8 +118,9 @@ namespace Script {
     // update Control, which also moves the camera
     Control.getInstance().update(deltaTime);
     // update Character
+    flame.update();
     for (const character of characters) {
-      character.update();
+      character.update(deltaTime);
     }
 
     checkHitbox();
@@ -113,15 +132,15 @@ namespace Script {
 
   function checkHitbox(): void {
     for (const character of characters) {
-      if (character == flame) {
+      // if (character == flame) {
 
-        continue;
-      }
-      
+      //   continue;
+      // }
+
       let posDifference: ƒ.Vector3 | ƒ.Vector2 = ƒ.Vector3.DIFFERENCE(flame.mtxLocal.translation, character.mtxLocal.translation);
       posDifference = posDifference.toVector2();
       if (posDifference.magnitude < 5) {
-        
+
         let dimensions: ƒ.Vector2 = ƒ.Vector2.SUM(flame.hitbox, character.hitbox);
         posDifference = new ƒ.Vector2(getAmount(posDifference.x), getAmount(posDifference.y));
         if (dimensions.x > posDifference.x && dimensions.y > posDifference.y) {
@@ -153,6 +172,7 @@ namespace Script {
         floorTile.addComponent(new ƒ.ComponentTransform);
         floorTile.mtxLocal.translateX(x);
         floorTile.mtxLocal.translateY(y);
+        floorTile.mtxLocal.translateZ(-1);
         floorTile.mtxLocal.scaleX(2);
         floorTile.mtxLocal.scaleY(2);
         // add SpriteMesh

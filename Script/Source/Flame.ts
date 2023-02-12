@@ -11,7 +11,7 @@ namespace Script {
     RightIdle, Right, RightUp, LeftIdle, Left, LeftUp
   };
 
-  interface Timeout { timeoutID: number, duration: number };
+  export interface Timeout { timeoutID: number, duration: number };
 
   import ƒ = FudgeCore;
   export class Flame extends Character {
@@ -19,9 +19,9 @@ namespace Script {
     protected animations: ƒAid.SpriteSheetAnimations = {};
 
     /**
-     * saves the id from the last started timeout
+     * saves the id from the last started timeout related to taking damage as well as the remaining duration
      */
-    private timeout: Timeout;
+    private hitTimeout: Timeout;
 
     private velocity: ƒ.Vector2 = new ƒ.Vector2();
 
@@ -44,9 +44,12 @@ namespace Script {
       let light: ƒ.Light = new ƒ.LightPoint(ƒ.Color.CSS("white"));
       let cmpLight: ƒ.ComponentLight = new ƒ.ComponentLight(light);
       this.lightNode.addComponent(cmpLight);
-      this.lightNode.mtxLocal.translateZ(1);
+      // this.lightNode.mtxLocal.translateZ(1);
       this.lightNode.mtxLocal.scale(ƒ.Vector3.ONE(20));
       this.appendChild(this.lightNode);
+
+      this.hitTimeout = { timeoutID: 0, duration: 0 };
+
     }
 
     public get getSpeed(): number {
@@ -57,7 +60,7 @@ namespace Script {
 
     }
 
-    public move(): void {
+    protected move(): void {
       let control: Control = Control.getInstance();
       // get inputs from control-class
       this.velocity.x = control.horizontal.getOutput();
@@ -71,25 +74,27 @@ namespace Script {
 
     }
 
-    public takeDamage(_sourcePower: number, _sourcePos: ƒ.Vector2 | ƒ.Vector3): void {
+    public takeDamage(_sourcePower: number, _sourcePos: ƒ.Vector3): void {
       super.takeDamage(_sourcePower, _sourcePos);
-
-      this.startIFrames(_sourcePower * 1000);
+      if (!this.hasIFrames) {
+                
+        this.startIFrames(_sourcePower * 1000);
+      }
     }
 
     private startIFrames(_timeoutDuration: number): void {
       this.hasIFrames = true;
 
-      if (this.timeout.duration > _timeoutDuration) {
+      if (this.hitTimeout.duration > _timeoutDuration) {
         return;
       }
 
-      clearTimeout(this.timeout.timeoutID);
+      clearTimeout(this.hitTimeout.timeoutID);
 
-      this.timeout.timeoutID = setTimeout(() => {
+      this.hitTimeout.timeoutID = setTimeout(() => {
         this.hasIFrames = false;
       }, _timeoutDuration);
-      this.timeout.duration = _timeoutDuration;
+      this.hitTimeout.duration = _timeoutDuration;
     }
 
     public update(): void {
@@ -117,9 +122,9 @@ namespace Script {
         }
       }
 
-      this.timeout.duration--;
-      if (this.timeout.duration < 0) {
-        this.timeout = { timeoutID: 0, duration: 0 };
+      this.hitTimeout.duration--;
+      if (this.hitTimeout.duration < 0) {
+        this.hitTimeout = { timeoutID: 0, duration: 0 };
       }
 
     }

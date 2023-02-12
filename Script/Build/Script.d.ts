@@ -29,11 +29,10 @@ declare namespace Script {
          * Create an character (Node) and add an transform-component
          */
         constructor(_name: string, _spriteDimensions: ƒ.Vector2);
-        abstract move(): void;
         abstract attack(): void;
-        takeDamage(_sourcePower: number, _sourcePos: ƒ.Vector2 | ƒ.Vector3): void;
+        takeDamage(_sourcePower: number, _sourcePos: ƒ.Vector3): void;
         abstract die(): void;
-        abstract update(): void;
+        abstract update(_deltaTime: number): void;
         abstract initializeAnimations(): Promise<void>;
         /**
         * initializes multiple animation with the same amount of frames
@@ -75,22 +74,26 @@ declare namespace Script {
 }
 declare namespace Script {
     import ƒAid = FudgeAid;
+    interface Timeout {
+        timeoutID: number;
+        duration: number;
+    }
     import ƒ = FudgeCore;
     class Flame extends Character {
         protected textureSrc: string;
         protected animations: ƒAid.SpriteSheetAnimations;
         /**
-         * saves the id from the last started timeout
+         * saves the id from the last started timeout related to taking damage as well as the remaining duration
          */
-        private timeout;
+        private hitTimeout;
         private velocity;
         private lightNode;
         constructor();
         get getSpeed(): number;
         attack(): void;
-        move(): void;
+        protected move(): void;
         die(): void;
-        takeDamage(_sourcePower: number, _sourcePos: ƒ.Vector2 | ƒ.Vector3): void;
+        takeDamage(_sourcePower: number, _sourcePos: ƒ.Vector3): void;
         private startIFrames;
         update(): void;
         initializeAnimations(): Promise<void>;
@@ -116,12 +119,14 @@ declare namespace Script {
         protected textureSrc: string;
         protected animations: ƒAid.SpriteSheetAnimations;
         private target;
-        constructor();
-        move(): void;
+        private targetUpdateTimeout;
+        constructor(_spawnPosition: ƒ.Vector3);
+        protected move(_deltaTime: number): void;
+        private updateTarget;
         attack(): void;
         takeDamage(): void;
         die(): void;
-        update(): void;
+        update(_deltaTime: number): void;
         initializeAnimations(): Promise<void>;
     }
 }
