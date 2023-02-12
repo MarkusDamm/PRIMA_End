@@ -1,0 +1,203 @@
+{
+  "Graph|2022-12-20T16:49:43.076Z|20384": {
+    "ƒ.Graph": {
+      "name": "Root",
+      "active": true,
+      "components": {},
+      "children": [
+        {
+          "ƒ.GraphInstance": {
+            "deserializeFromSource": true,
+            "name": "Light",
+            "idSource": "Graph|2023-02-10T12:24:02.844Z|61899"
+          }
+        }
+      ],
+      "idResource": "Graph|2022-12-20T16:49:43.076Z|20384",
+      "type": "Graph"
+    }
+  },
+  "MeshQuad|2022-12-20T16:52:13.282Z|39535": {
+    "ƒ.MeshQuad": {
+      "idResource": "MeshQuad|2022-12-20T16:52:13.282Z|39535",
+      "name": "MeshQuad"
+    }
+  },
+  "MeshSprite|2022-12-20T16:52:17.285Z|47500": {
+    "ƒ.MeshSprite": {
+      "idResource": "MeshSprite|2022-12-20T16:52:17.285Z|47500",
+      "name": "MeshSprite",
+      "type": "MeshSprite"
+    }
+  },
+  "TextureImage|2022-12-20T16:52:46.810Z|67723": {
+    "ƒ.TextureImage": {
+      "url": "Images\\H-Sheet32x32.png",
+      "type": "TextureImage",
+      "Texture": {
+        "idResource": "TextureImage|2022-12-20T16:52:46.810Z|67723",
+        "name": "Images\\H-Sheet32x32.png",
+        "mipmap": "CRISP"
+      }
+    }
+  },
+  "TextureImage|2022-12-20T16:52:52.555Z|75583": {
+    "ƒ.TextureImage": {
+      "url": "Images\\Floor-TileBorderless24x24.png",
+      "type": "TextureImage",
+      "Texture": {
+        "idResource": "TextureImage|2022-12-20T16:52:52.555Z|75583",
+        "name": "Images\\Floor-TileBorderless24x24.png",
+        "mipmap": "CRISP"
+      }
+    }
+  },
+  "Material|2022-12-20T16:58:16.485Z|78717": {
+    "ƒ.Material": {
+      "name": "ShaderFlatTextured",
+      "idResource": "Material|2022-12-20T16:58:16.485Z|78717",
+      "shader": "ShaderFlatTextured",
+      "coat": {
+        "ƒ.CoatRemissiveTextured": {
+          "color": "[1, 1, 1, 1]",
+          "idTexture": "TextureImage|2022-12-20T16:52:52.555Z|75583",
+          "diffuse": 1,
+          "specular": 0
+        }
+      }
+    }
+  },
+  "Graph|2022-12-20T16:56:52.105Z|13222": {
+    "ƒ.Graph": {
+      "name": "Floor",
+      "active": true,
+      "components": {
+        "ComponentMesh": [
+          {
+            "ƒ.ComponentMesh": {
+              "idMesh": "MeshSprite|2022-12-20T16:52:17.285Z|47500",
+              "pivot": {
+                "translation": "[0, 0, 0]",
+                "rotation": "[0, 0, 0]",
+                "scaling": "[2, 2, 1]"
+              },
+              "Component": {
+                "active": true
+              }
+            }
+          }
+        ],
+        "ComponentMaterial": [
+          {
+            "ƒ.ComponentMaterial": {
+              "sortForAlpha": false,
+              "clrPrimary": "[1, 1, 1, 1]",
+              "clrSecondary": "[1, 1, 1, 1]",
+              "pivot": {
+                "translation": "[0, 0]",
+                "rotation": 0,
+                "scaling": "[1, 1]"
+              },
+              "Component": {
+                "active": true
+              },
+              "idMaterial": "Material|2022-12-20T16:58:16.485Z|78717"
+            }
+          }
+        ]
+      },
+      "children": [],
+      "idResource": "Graph|2022-12-20T16:56:52.105Z|13222",
+      "type": "Graph"
+    }
+  },
+  "Material|2023-02-10T12:58:14.747Z|78043": {
+    "ƒ.Material": {
+      "name": "FlameShader",
+      "idResource": "Material|2023-02-10T12:58:14.747Z|78043",
+      "shader": "ShaderFlatTextured",
+      "coat": {
+        "ƒ.CoatRemissiveTextured": {
+          "color": "[1, 1, 1, 1]",
+          "idTexture": "TextureImage|2022-12-20T16:52:46.810Z|67723",
+          "diffuse": 1,
+          "specular": 0
+        }
+      }
+    }
+  },
+  "Graph|2023-01-10T15:26:14.333Z|40591": {
+    "ƒ.Graph": {
+      "name": "Character",
+      "active": true,
+      "components": {
+        "ComponentMaterial": [
+          {
+            "ƒ.ComponentMaterial": {
+              "sortForAlpha": false,
+              "clrPrimary": "[1, 1, 1, 1]",
+              "clrSecondary": "[1, 1, 1, 1]",
+              "pivot": {
+                "translation": "[0, 0]",
+                "rotation": 0,
+                "scaling": "[1, 1]"
+              },
+              "Component": {
+                "active": true
+              },
+              "idMaterial": "Material|2023-02-10T12:58:14.747Z|78043"
+            }
+          }
+        ],
+        "ComponentMesh": [
+          {
+            "ƒ.ComponentMesh": {
+              "idMesh": "MeshSprite|2022-12-20T16:52:17.285Z|47500",
+              "pivot": {
+                "translation": "[0, 0, 0.10000000149011612]",
+                "rotation": "[0, 0, 0]",
+                "scaling": "[3, 2, 1]"
+              },
+              "Component": {
+                "active": true
+              }
+            }
+          }
+        ]
+      },
+      "children": [],
+      "idResource": "Graph|2023-01-10T15:26:14.333Z|40591",
+      "type": "Graph"
+    }
+  },
+  "Graph|2023-02-10T12:24:02.844Z|61899": {
+    "ƒ.Graph": {
+      "name": "Light",
+      "active": true,
+      "components": {
+        "ComponentLight": [
+          {
+            "ƒ.ComponentLight": {
+              "pivot": {
+                "translation": "[0, 0, 0]",
+                "rotation": "[0, 180, 0]",
+                "scaling": "[1, 1, 1]"
+              },
+              "light": {
+                "ƒ.LightAmbient": {
+                  "color": "[0.050980392156862744, 0.050980392156862744, 0.050980392156862744, 1]"
+                }
+              },
+              "Component": {
+                "active": true
+              }
+            }
+          }
+        ]
+      },
+      "children": [],
+      "idResource": "Graph|2023-02-10T12:24:02.844Z|61899",
+      "type": "Graph"
+    }
+  }
+}
