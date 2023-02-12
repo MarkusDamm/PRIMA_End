@@ -10,6 +10,7 @@ namespace Script {
   import ƒ = FudgeCore;
   export abstract class Character extends ƒ.Node {
     protected textureSrc: string;
+    protected hiddenTextureSrc: string = "./Images/Hidden.png";
     protected spriteNode: ƒAid.NodeSprite;
     protected animations: ƒAid.SpriteSheetAnimations;
 
@@ -30,7 +31,6 @@ namespace Script {
     constructor(_name: string, _spriteDimensions: ƒ.Vector2) {
       super(_name);
       this.addComponent(new ƒ.ComponentTransform);
-      // this.mtxLocal.translation.z = 1;
       this.hitbox = ƒ.Vector2.SCALE(_spriteDimensions, 1 / 32);
       console.log(this.hitbox);
 
@@ -45,8 +45,24 @@ namespace Script {
       }
     }
     abstract die(): void;
+    abstract unveil(): void;
     public abstract update(_deltaTime: number): void;
-    public abstract initializeAnimations(): Promise<void>;
+    public async initializeAnimations(): Promise<void>{
+      let texture: ƒ.TextureImage = new ƒ.TextureImage();
+      await texture.load(this.hiddenTextureSrc);
+      let coat: ƒ.CoatTextured = new ƒ.CoatTextured(ƒ.Color.CSS("white"), texture);
+      let animationFrames: number = 1;
+      let origin: ƒ.ORIGIN2D = ƒ.ORIGIN2D.CENTER;
+      let offsetNext: ƒ.Vector2 = ƒ.Vector2.X(16);
+
+      let rectangles: Rectangles = { "hidden": [0, 0, 16, 16] };
+
+      this.initializeAnimationsByFrames(coat, rectangles, animationFrames, origin, offsetNext);
+
+      this.spriteNode.setFrameDirection(1);
+      this.spriteNode.framerate = 6;
+
+    }
 
     /**
     * initializes multiple animation with the same amount of frames

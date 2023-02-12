@@ -17,12 +17,12 @@ var Script;
          */
         constructor(_name, _spriteDimensions) {
             super(_name);
+            this.hiddenTextureSrc = "./Images/Hidden.png";
             /**
              * =16; 16 pixel equal one length unit
             */
             this.resolution = 16;
             this.addComponent(new ƒ.ComponentTransform);
-            // this.mtxLocal.translation.z = 1;
             this.hitbox = ƒ.Vector2.SCALE(_spriteDimensions, 1 / 32);
             console.log(this.hitbox);
         }
@@ -30,6 +30,18 @@ var Script;
             if (!this.hasIFrames) {
                 this.health -= _sourcePower;
             }
+        }
+        async initializeAnimations() {
+            let texture = new ƒ.TextureImage();
+            await texture.load(this.hiddenTextureSrc);
+            let coat = new ƒ.CoatTextured(ƒ.Color.CSS("white"), texture);
+            let animationFrames = 1;
+            let origin = ƒ.ORIGIN2D.CENTER;
+            let offsetNext = ƒ.Vector2.X(16);
+            let rectangles = { "hidden": [0, 0, 16, 16] };
+            this.initializeAnimationsByFrames(coat, rectangles, animationFrames, origin, offsetNext);
+            this.spriteNode.setFrameDirection(1);
+            this.spriteNode.framerate = 6;
         }
         /**
         * initializes multiple animation with the same amount of frames
@@ -52,7 +64,7 @@ var Script;
     // get from Configs
     let delay = 300;
     let camDelay = 500;
-    // Control Singleton, since only one instance is necessary
+    /** Control as singleton, since only one instance is necessary*/
     class Control {
         constructor() {
             this.controlType = 0 /* PROPORTIONAL */;
@@ -75,7 +87,8 @@ var Script;
             return Control.instance;
         }
         /**
-         * update Control witch deltaTime(time since last update)
+         * update Control with deltaTime
+         * @param _deltaTime time since last update
          */
         update(_deltaTime) {
             let horizontalValue = (ƒ.Keyboard.mapToValue(1, 0, [ƒ.KEYBOARD_CODE.D]) +
@@ -169,7 +182,6 @@ var Script;
             let light = new ƒ.LightPoint(ƒ.Color.CSS("white"));
             let cmpLight = new ƒ.ComponentLight(light);
             this.lightNode.addComponent(cmpLight);
-            // this.lightNode.mtxLocal.translateZ(1);
             this.lightNode.mtxLocal.scale(ƒ.Vector3.ONE(20));
             this.appendChild(this.lightNode);
             this.hitTimeout = { timeoutID: 0, duration: 0 };
@@ -281,6 +293,9 @@ var Script;
                     break;
             }
         }
+        unveil() {
+            // propably useless here
+        }
     }
     Script.Flame = Flame;
 })(Script || (Script = {}));
@@ -370,6 +385,7 @@ var Script;
             let enemy = new Script.Octo(randomPos);
             enemy.initializeAnimations();
             branch.appendChild(enemy);
+            enemy.addEventListener("enemyIsClose", enemy.unveil);
             characters.push(enemy);
         }
     }
@@ -399,7 +415,8 @@ var Script;
             // }
             let posDifference = ƒ.Vector3.DIFFERENCE(Script.flame.mtxLocal.translation, character.mtxLocal.translation);
             posDifference = posDifference.toVector2();
-            if (posDifference.magnitude < 5) {
+            if (posDifference.magnitude < 6) {
+                character.dispatchEventToTargetOnly(new CustomEvent("enemyIsClose"));
                 let dimensions = ƒ.Vector2.SUM(Script.flame.hitbox, character.hitbox);
                 posDifference = new ƒ.Vector2(getAmount(posDifference.x), getAmount(posDifference.y));
                 if (dimensions.x > posDifference.x && dimensions.y > posDifference.y) {
@@ -470,6 +487,9 @@ var Script;
             super("Octo", new ƒ.Vector2(16, 16));
             this.textureSrc = "./Images/ALTTP_Octo16x16.png";
             this.animations = {};
+            this.unveil = () => {
+                this.spriteNode.setAnimation(this.animations.idle);
+            };
             this.speed = speed;
             this.health = health;
             this.power = power;
@@ -477,7 +497,6 @@ var Script;
             this.spriteNode.addComponent(new ƒ.ComponentTransform);
             this.appendChild(this.spriteNode);
             this.mtxLocal.translate(_spawnPosition);
-            console.log("Octo Spawn", _spawnPosition);
             this.targetUpdateTimeout = { timeoutID: 0, duration: 0 };
             this.updateTarget();
         }
@@ -506,6 +525,7 @@ var Script;
             this.move(_deltaTime);
         }
         async initializeAnimations() {
+            super.initializeAnimations();
             let texture = new ƒ.TextureImage();
             await texture.load(this.textureSrc);
             let coat = new ƒ.CoatTextured(ƒ.Color.CSS("white"), texture);
@@ -514,7 +534,7 @@ var Script;
             let offsetNext = ƒ.Vector2.X(16);
             let rectangles = { "idle": [0, 0, 16, 16], "death": [32, 0, 16, 16] };
             this.initializeAnimationsByFrames(coat, rectangles, animationFrames, origin, offsetNext);
-            this.spriteNode.setAnimation(this.animations.idle);
+            this.spriteNode.setAnimation(this.animations.hidden);
             // this.animState = Frame.Idle;
             this.spriteNode.setFrameDirection(1);
             this.spriteNode.framerate = 6;

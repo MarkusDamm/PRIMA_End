@@ -103,6 +103,7 @@ namespace Script {
       let enemy: Octo = new Octo(randomPos);
       enemy.initializeAnimations();
       branch.appendChild(enemy);
+      enemy.addEventListener("enemyIsClose", enemy.unveil);
       characters.push(enemy);
     }
   }
@@ -139,8 +140,9 @@ namespace Script {
 
       let posDifference: ƒ.Vector3 | ƒ.Vector2 = ƒ.Vector3.DIFFERENCE(flame.mtxLocal.translation, character.mtxLocal.translation);
       posDifference = posDifference.toVector2();
-      if (posDifference.magnitude < 5) {
-
+      if (posDifference.magnitude < 6) {
+        character.dispatchEventToTargetOnly(new CustomEvent("enemyIsClose"))
+        
         let dimensions: ƒ.Vector2 = ƒ.Vector2.SUM(flame.hitbox, character.hitbox);
         posDifference = new ƒ.Vector2(getAmount(posDifference.x), getAmount(posDifference.y));
         if (dimensions.x > posDifference.x && dimensions.y > posDifference.y) {

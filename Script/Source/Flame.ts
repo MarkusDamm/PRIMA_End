@@ -44,7 +44,6 @@ namespace Script {
       let light: ƒ.Light = new ƒ.LightPoint(ƒ.Color.CSS("white"));
       let cmpLight: ƒ.ComponentLight = new ƒ.ComponentLight(light);
       this.lightNode.addComponent(cmpLight);
-      // this.lightNode.mtxLocal.translateZ(1);
       this.lightNode.mtxLocal.scale(ƒ.Vector3.ONE(20));
       this.appendChild(this.lightNode);
 
@@ -184,6 +183,10 @@ namespace Script {
           console.log("no valid Frame");
           break;
       }
+    }
+
+    unveil(): void {
+      // propably useless here
     }
   }
 }

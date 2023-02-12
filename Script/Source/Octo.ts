@@ -26,7 +26,6 @@ namespace Script {
       this.appendChild(this.spriteNode);
 
       this.mtxLocal.translate(_spawnPosition);
-      console.log("Octo Spawn", _spawnPosition);
 
       this.targetUpdateTimeout = { timeoutID: 0, duration: 0 };
       this.updateTarget();
@@ -65,6 +64,7 @@ namespace Script {
     }
 
     public async initializeAnimations(): Promise<void> {
+      super.initializeAnimations();
       let texture: ƒ.TextureImage = new ƒ.TextureImage();
       await texture.load(this.textureSrc);
 
@@ -78,11 +78,15 @@ namespace Script {
 
       this.initializeAnimationsByFrames(coat, rectangles, animationFrames, origin, offsetNext);
 
-      this.spriteNode.setAnimation(<ƒAid.SpriteSheetAnimation>this.animations.idle);
+      this.spriteNode.setAnimation(<ƒAid.SpriteSheetAnimation>this.animations.hidden);
       // this.animState = Frame.Idle;
       this.spriteNode.setFrameDirection(1);
       this.spriteNode.framerate = 6;
 
+    }
+
+    unveil = (): void => {
+      this.spriteNode.setAnimation(<ƒAid.SpriteSheetAnimation>this.animations.idle);
     }
   }
 }

@@ -13,6 +13,7 @@ declare namespace Script {
     import ƒ = FudgeCore;
     abstract class Character extends ƒ.Node {
         protected textureSrc: string;
+        protected hiddenTextureSrc: string;
         protected spriteNode: ƒAid.NodeSprite;
         protected animations: ƒAid.SpriteSheetAnimations;
         /**
@@ -32,8 +33,9 @@ declare namespace Script {
         abstract attack(): void;
         takeDamage(_sourcePower: number, _sourcePos: ƒ.Vector3): void;
         abstract die(): void;
+        abstract unveil(): void;
         abstract update(_deltaTime: number): void;
-        abstract initializeAnimations(): Promise<void>;
+        initializeAnimations(): Promise<void>;
         /**
         * initializes multiple animation with the same amount of frames
         */
@@ -41,6 +43,7 @@ declare namespace Script {
     }
 }
 declare namespace Script {
+    /** Control as singleton, since only one instance is necessary*/
     class Control {
         private static instance;
         controlType: ƒ.CONTROL_TYPE;
@@ -57,7 +60,8 @@ declare namespace Script {
          */
         static getInstance(): Control;
         /**
-         * update Control witch deltaTime(time since last update)
+         * update Control with deltaTime
+         * @param _deltaTime time since last update
          */
         update(_deltaTime: number): void;
         private moveCam;
@@ -102,6 +106,7 @@ declare namespace Script {
          * @param _state current Frame
          */
         private chooseAnimation;
+        unveil(): void;
     }
 }
 declare namespace Script {
@@ -128,6 +133,7 @@ declare namespace Script {
         die(): void;
         update(_deltaTime: number): void;
         initializeAnimations(): Promise<void>;
+        unveil: () => void;
     }
 }
 declare namespace Script {

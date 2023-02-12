@@ -3,7 +3,7 @@ namespace Script {
   let delay: number = 300;
   let camDelay: number = 500;
 
-  // Control Singleton, since only one instance is necessary
+  /** Control as singleton, since only one instance is necessary*/ 
   export class Control {
     private static instance: Control;
     controlType: ƒ.CONTROL_TYPE = ƒ.CONTROL_TYPE.PROPORTIONAL;
@@ -37,7 +37,8 @@ namespace Script {
     }
 
     /**
-     * update Control witch deltaTime(time since last update)    
+     * update Control with deltaTime  
+     * @param _deltaTime time since last update
      */
     public update(_deltaTime: number): void {
       let horizontalValue: number = (
