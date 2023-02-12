@@ -2,9 +2,9 @@ namespace Script {
   import ƒ = FudgeCore;
   ƒ.Debug.info("Main Program Template running!");
 
-  // config
-  let stageDimension: ƒ.Vector2 = new ƒ.Vector2(50, 50);
-  let floorTileSrc: string = "./Images/Floor-TileBorderless24x24.png";
+  // from config
+  let stageDimension: ƒ.Vector2;
+  let floorTileSrc: string;
 
   // global variables
   let viewport: ƒ.Viewport;
@@ -12,6 +12,8 @@ namespace Script {
   export let camNode: ƒ.Node;
   export let flame: Flame;
   let characters: Character[] = [];
+
+  export let config: any;
 
   document.addEventListener("interactiveViewportStarted", <EventListener><unknown>start);
 
@@ -34,6 +36,11 @@ namespace Script {
     // load resources referenced in the link-tag
     await ƒ.Project.loadResourcesFromHTML();
     ƒ.Debug.log("Project:", ƒ.Project.resources);
+
+    config = await (await fetch("./config.json")).json();
+    console.log(config.control);
+    stageDimension = new ƒ.Vector2(config.stage.dimensionX, config.stage.dimensionY);
+    floorTileSrc = config.stage.floorTextureSource;
 
     // get the graph to show from loaded resources
     let graph: ƒ.Graph = <ƒ.Graph>ƒ.Project.resources[_graphId];

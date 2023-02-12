@@ -32,8 +32,6 @@ namespace Script {
       super(_name);
       this.addComponent(new ƒ.ComponentTransform);
       this.hitbox = ƒ.Vector2.SCALE(_spriteDimensions, 1 / 32);
-      console.log(this.hitbox);
-
     }
 
     // protected abstract move(): void;

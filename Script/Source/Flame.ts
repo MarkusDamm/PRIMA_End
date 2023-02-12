@@ -1,12 +1,6 @@
 namespace Script {
   import ƒAid = FudgeAid;
 
-  // get this from Configs
-  let speed: number = 10;
-  let health: number = 10;
-  let power: number = 5;
-
-
   enum Frames {
     RightIdle, Right, RightUp, LeftIdle, Left, LeftUp
   };
@@ -30,9 +24,9 @@ namespace Script {
     constructor() {
       super("Flame", new ƒ.Vector2(32, 32));
 
-      this.speed = speed;
-      this.health = health;
-      this.power = power;
+      this.speed = config.player.speed;
+      this.health = config.player.health;
+      this.power = config.player.power;
 
       this.spriteNode = new ƒAid.NodeSprite("FlameSprite");
       this.spriteNode.addComponent(new ƒ.ComponentTransform);
@@ -178,7 +172,6 @@ namespace Script {
         case Frames.LeftUp:
           this.spriteNode.setAnimation(<ƒAid.SpriteSheetAnimation>this.animations.leftUp);
           break;
-
         default:
           console.log("no valid Frame");
           break;

@@ -113,6 +113,7 @@ declare namespace Script {
     import ƒ = FudgeCore;
     let camNode: ƒ.Node;
     let flame: Flame;
+    let config: any;
     /**
      * get the amount (Betrag) of a number
      */

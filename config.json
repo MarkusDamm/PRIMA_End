@@ -1,3 +1,21 @@
 {
-  
+  "player": {
+    "speed": 10,
+    "health": 10,
+    "power": 2
+  },
+  "enemy": {
+    "speed": 2,
+    "health": 5,
+    "power": 1
+  },
+  "control": {
+    "characterDelay": 300,
+    "cameraDelay": 500
+  },
+  "stage": {
+    "floorTextureSource": "./Images/Floor-TileBorderless24x24.png",
+    "dimensionX": 50,
+    "dimensionY": 50
+  }
 }

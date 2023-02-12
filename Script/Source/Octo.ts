@@ -1,11 +1,6 @@
 namespace Script {
   import ƒAid = FudgeAid;
 
-  // get this from Configs
-  let speed: number = 2;
-  let health: number = 5;
-  let power: number = 1;
-
   export class Octo extends Character {
     protected textureSrc: string = "./Images/ALTTP_Octo16x16.png";
     protected animations: ƒAid.SpriteSheetAnimations = {};
@@ -17,9 +12,9 @@ namespace Script {
     constructor(_spawnPosition: ƒ.Vector3) {
       super("Octo", new ƒ.Vector2(16, 16));
 
-      this.speed = speed;
-      this.health = health;
-      this.power = power;
+      this.speed = config.enemy.speed;
+      this.health = config.enemy.health;
+      this.power = config.enemy.power;
 
       this.spriteNode = new ƒAid.NodeSprite("FlameSprite");
       this.spriteNode.addComponent(new ƒ.ComponentTransform);

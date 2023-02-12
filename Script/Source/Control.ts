@@ -1,8 +1,4 @@
 namespace Script {
-  // get from Configs
-  let delay: number = 300;
-  let camDelay: number = 500;
-
   /** Control as singleton, since only one instance is necessary*/ 
   export class Control {
     private static instance: Control;
@@ -16,11 +12,11 @@ namespace Script {
     camVer: ƒ.Control;
 
     private constructor() {
-      this.horizontal = new ƒ.Control("horizontal", flame.getSpeed, this.controlType, delay);
-      this.vertical = new ƒ.Control("vertical", flame.getSpeed, this.controlType, delay);
+      this.horizontal = new ƒ.Control("horizontal", flame.getSpeed, this.controlType, config.control.characterDelay);
+      this.vertical = new ƒ.Control("vertical", flame.getSpeed, this.controlType, config.control.characterDelay);
 
-      this.camHor = new ƒ.Control("Camera Horizontal", flame.getSpeed, this.controlType, camDelay);
-      this.camVer = new ƒ.Control("Camera Vertical", flame.getSpeed, this.controlType, camDelay);
+      this.camHor = new ƒ.Control("Camera Horizontal", flame.getSpeed, this.controlType, config.control.cameraDelay);
+      this.camVer = new ƒ.Control("Camera Vertical", flame.getSpeed, this.controlType, config.control.cameraDelay);
 
       this.controls.push(this.horizontal, this.vertical, this.camHor, this.camVer);
     }

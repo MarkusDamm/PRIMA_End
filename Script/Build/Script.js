@@ -24,7 +24,6 @@ var Script;
             this.resolution = 16;
             this.addComponent(new ƒ.ComponentTransform);
             this.hitbox = ƒ.Vector2.SCALE(_spriteDimensions, 1 / 32);
-            console.log(this.hitbox);
         }
         takeDamage(_sourcePower, _sourcePos) {
             if (!this.hasIFrames) {
@@ -61,18 +60,15 @@ var Script;
 })(Script || (Script = {}));
 var Script;
 (function (Script) {
-    // get from Configs
-    let delay = 300;
-    let camDelay = 500;
     /** Control as singleton, since only one instance is necessary*/
     class Control {
         constructor() {
             this.controlType = 0 /* PROPORTIONAL */;
             this.controls = [];
-            this.horizontal = new ƒ.Control("horizontal", Script.flame.getSpeed, this.controlType, delay);
-            this.vertical = new ƒ.Control("vertical", Script.flame.getSpeed, this.controlType, delay);
-            this.camHor = new ƒ.Control("Camera Horizontal", Script.flame.getSpeed, this.controlType, camDelay);
-            this.camVer = new ƒ.Control("Camera Vertical", Script.flame.getSpeed, this.controlType, camDelay);
+            this.horizontal = new ƒ.Control("horizontal", Script.flame.getSpeed, this.controlType, Script.config.control.characterDelay);
+            this.vertical = new ƒ.Control("vertical", Script.flame.getSpeed, this.controlType, Script.config.control.characterDelay);
+            this.camHor = new ƒ.Control("Camera Horizontal", Script.flame.getSpeed, this.controlType, Script.config.control.cameraDelay);
+            this.camVer = new ƒ.Control("Camera Vertical", Script.flame.getSpeed, this.controlType, Script.config.control.cameraDelay);
             this.controls.push(this.horizontal, this.vertical, this.camHor, this.camVer);
         }
         /**
@@ -148,10 +144,6 @@ var Script;
 var Script;
 (function (Script) {
     var ƒAid = FudgeAid;
-    // get this from Configs
-    let speed = 10;
-    let health = 10;
-    let power = 5;
     let Frames;
     (function (Frames) {
         Frames[Frames["RightIdle"] = 0] = "RightIdle";
@@ -170,9 +162,9 @@ var Script;
             this.textureSrc = "./Images/H-Sheet32x32.png";
             this.animations = {};
             this.velocity = new ƒ.Vector2();
-            this.speed = speed;
-            this.health = health;
-            this.power = power;
+            this.speed = Script.config.player.speed;
+            this.health = Script.config.player.health;
+            this.power = Script.config.player.power;
             this.spriteNode = new ƒAid.NodeSprite("FlameSprite");
             this.spriteNode.addComponent(new ƒ.ComponentTransform);
             this.appendChild(this.spriteNode);
@@ -303,9 +295,9 @@ var Script;
 (function (Script) {
     var ƒ = FudgeCore;
     ƒ.Debug.info("Main Program Template running!");
-    // config
-    let stageDimension = new ƒ.Vector2(50, 50);
-    let floorTileSrc = "./Images/Floor-TileBorderless24x24.png";
+    // from config
+    let stageDimension;
+    let floorTileSrc;
     // global variables
     let viewport;
     let branch;
@@ -328,6 +320,10 @@ var Script;
         // load resources referenced in the link-tag
         await ƒ.Project.loadResourcesFromHTML();
         ƒ.Debug.log("Project:", ƒ.Project.resources);
+        Script.config = await (await fetch("./config.json")).json();
+        console.log(Script.config.control);
+        stageDimension = new ƒ.Vector2(Script.config.stage.dimensionX, Script.config.stage.dimensionY);
+        floorTileSrc = Script.config.stage.floorTextureSource;
         // get the graph to show from loaded resources
         let graph = ƒ.Project.resources[_graphId];
         ƒ.Debug.log("Graph:", graph);
@@ -478,10 +474,6 @@ var Script;
 var Script;
 (function (Script) {
     var ƒAid = FudgeAid;
-    // get this from Configs
-    let speed = 2;
-    let health = 5;
-    let power = 1;
     class Octo extends Script.Character {
         constructor(_spawnPosition) {
             super("Octo", new ƒ.Vector2(16, 16));
@@ -490,9 +482,9 @@ var Script;
             this.unveil = () => {
                 this.spriteNode.setAnimation(this.animations.idle);
             };
-            this.speed = speed;
-            this.health = health;
-            this.power = power;
+            this.speed = Script.config.enemy.speed;
+            this.health = Script.config.enemy.health;
+            this.power = Script.config.enemy.power;
             this.spriteNode = new ƒAid.NodeSprite("FlameSprite");
             this.spriteNode.addComponent(new ƒ.ComponentTransform);
             this.appendChild(this.spriteNode);
