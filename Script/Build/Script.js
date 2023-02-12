@@ -1,22 +1,51 @@
 "use strict";
 var Script;
 (function (Script) {
+    var ƒAid = FudgeAid;
     let State;
     (function (State) {
         State[State["Idle"] = 0] = "Idle";
         State[State["Move"] = 1] = "Move";
         State[State["Attack"] = 2] = "Attack";
         State[State["Die"] = 3] = "Die";
+        State[State["Hurt"] = 4] = "Hurt";
     })(State = Script.State || (Script.State = {}));
     var ƒ = FudgeCore;
     class Character extends ƒ.Node {
         /**
          * Create an character (Node) and add an transform-component
          */
-        constructor(_name) {
+        constructor(_name, _spriteDimensions) {
             super(_name);
+            /**
+             * =16; 16 pixel equal one length unit
+            */
             this.resolution = 16;
             this.addComponent(new ƒ.ComponentTransform);
+            this.mtxLocal.translateZ(1);
+            this.hitbox = ƒ.Vector2.SCALE(_spriteDimensions, 1 / 32);
+            console.log(this.hitbox);
+        }
+        takeDamage(_sourcePower, _sourcePos) {
+            if (!this.hasIFrames) {
+                if (_sourcePos.z) {
+                    _sourcePos.toVector2();
+                }
+                this.health -= _sourcePower;
+            }
+        }
+        /**
+        * initializes multiple animation with the same amount of frames
+        */
+        initializeAnimationsByFrames(_coat, _rectangles, _frames, _orig, _offsetNext) {
+            for (let key in _rectangles) {
+                const rec = _rectangles[key];
+                let anim = new ƒAid.SpriteSheetAnimation(key, _coat);
+                let fRec = ƒ.Rectangle.GET(rec[0], rec[1], rec[2], rec[3]);
+                anim.generateByGrid(fRec, _frames, this.resolution, _orig, _offsetNext);
+                console.log(key);
+                this.animations[key] = anim;
+            }
         }
     }
     Script.Character = Character;
@@ -123,20 +152,21 @@ var Script;
         Frames[Frames["LeftUp"] = 5] = "LeftUp";
     })(Frames || (Frames = {}));
     ;
+    ;
     var ƒ = FudgeCore;
     class Flame extends Script.Character {
         constructor() {
-            super("Flame");
+            super("Flame", new ƒ.Vector2(32, 32));
             this.textureSrc = "./Images/H-Sheet32x32.png";
             this.animations = {};
             this.velocity = new ƒ.Vector2();
             this.speed = speed;
             this.health = health;
             this.power = power;
-            this.mtxLocal.translateZ(1);
             this.spriteNode = new ƒAid.NodeSprite("FlameSprite");
             this.spriteNode.addComponent(new ƒ.ComponentTransform);
             this.appendChild(this.spriteNode);
+            // add light
             this.lightNode = new ƒ.Node("FlameLight");
             this.lightNode.addComponent(new ƒ.ComponentTransform);
             let light = new ƒ.LightPoint(ƒ.Color.CSS("white"));
@@ -161,7 +191,20 @@ var Script;
         }
         die() {
         }
-        takeDamage() {
+        takeDamage(_sourcePower, _sourcePos) {
+            super.takeDamage(_sourcePower, _sourcePos);
+            this.startIFrames(_sourcePower * 1000);
+        }
+        startIFrames(_timeoutDuration) {
+            this.hasIFrames = true;
+            if (this.timeout.duration > _timeoutDuration) {
+                return;
+            }
+            clearTimeout(this.timeout.timeoutID);
+            this.timeout.timeoutID = setTimeout(() => {
+                this.hasIFrames = false;
+            }, _timeoutDuration);
+            this.timeout.duration = _timeoutDuration;
         }
         update() {
             this.move();
@@ -186,6 +229,10 @@ var Script;
                         this.chooseAnimation(Frames.Left);
                 }
             }
+            this.timeout.duration--;
+            if (this.timeout.duration < 0) {
+                this.timeout = { timeoutID: 0, duration: 0 };
+            }
         }
         async initializeAnimations() {
             let texture = new ƒ.TextureImage();
@@ -204,19 +251,6 @@ var Script;
             // this.animState = Frame.Idle;
             this.spriteNode.setFrameDirection(1);
             this.spriteNode.framerate = 12;
-        }
-        /**
-        * initializes multiple animation with the same amount of frames
-        */
-        initializeAnimationsByFrames(_coat, _rectangles, _frames, _orig, _offsetNext) {
-            for (let key in _rectangles) {
-                const rec = _rectangles[key];
-                let anim = new ƒAid.SpriteSheetAnimation(key, _coat);
-                let fRec = ƒ.Rectangle.GET(rec[0], rec[1], rec[2], rec[3]);
-                anim.generateByGrid(fRec, _frames, this.resolution, _orig, _offsetNext);
-                console.log(key);
-                this.animations[key] = anim;
-            }
         }
         /**
          * adjusts the animation to the given _state
@@ -257,8 +291,10 @@ var Script;
     // config
     let stageDimension = new ƒ.Vector2(50, 50);
     let floorTileSrc = "./Images/Floor-TileBorderless24x24.png";
+    // global variables
     let viewport;
     let branch;
+    let characters = [];
     document.addEventListener("interactiveViewportStarted", start);
     window.addEventListener("load", init);
     window.addEventListener("keydown", stopLoop);
@@ -312,19 +348,46 @@ var Script;
         Script.flame = new Script.Flame();
         Script.Control.getInstance();
         Script.flame.initializeAnimations();
-        branch.addChild(Script.flame);
+        branch.appendChild(Script.flame);
+        characters.push(Script.flame);
+        addEnemy();
         ƒ.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, update);
         ƒ.Loop.start(); // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
+    }
+    function addEnemy() {
+        let enemy = new Script.Octo();
+        enemy.initializeAnimations();
+        branch.appendChild(enemy);
+        characters.push(enemy);
     }
     function update(_event) {
         let deltaTime = ƒ.Loop.timeFrameGame / 1000;
         // update Control, which also moves the camera
         Script.Control.getInstance().update(deltaTime);
         // update Character
-        Script.flame.update();
+        for (const character of characters) {
+            character.update();
+        }
+        checkHitbox();
         // ƒ.Physics.simulate();  // if physics is included and used
         viewport.draw();
         // ƒ.AudioManager.default.update();
+    }
+    function checkHitbox() {
+        for (const character of characters) {
+            if (character == Script.flame) {
+                continue;
+            }
+            let posDifference = ƒ.Vector3.DIFFERENCE(Script.flame.mtxLocal.translation, character.mtxLocal.translation);
+            posDifference = posDifference.toVector2();
+            if (posDifference.magnitude < 5) {
+                let dimensions = ƒ.Vector2.SUM(Script.flame.hitbox, character.hitbox);
+                posDifference = new ƒ.Vector2(getAmount(posDifference.x), getAmount(posDifference.y));
+                if (dimensions.x > posDifference.x && dimensions.y > posDifference.y) {
+                    Script.flame.takeDamage(character.power, character.mtxLocal.translation);
+                }
+            }
+        }
     }
     function stopLoop(_event) {
         if (_event.key == "p") {
@@ -374,6 +437,57 @@ var Script;
             return _number;
     }
     Script.getAmount = getAmount;
+})(Script || (Script = {}));
+var Script;
+(function (Script) {
+    var ƒAid = FudgeAid;
+    // get this from Configs
+    let speed = 2;
+    let health = 5;
+    let power = 1;
+    class Octo extends Script.Character {
+        constructor() {
+            super("Octo", new ƒ.Vector2(16, 16));
+            this.textureSrc = "./Images/ALTTP_Octo16x16.png";
+            this.animations = {};
+            this.speed = speed;
+            this.health = health;
+            this.power = power;
+            this.spriteNode = new ƒAid.NodeSprite("FlameSprite");
+            this.spriteNode.addComponent(new ƒ.ComponentTransform);
+            this.appendChild(this.spriteNode);
+            this.mtxLocal.translateX(3);
+            this.mtxLocal.translateY(0);
+        }
+        move() {
+        }
+        attack() {
+        }
+        takeDamage() {
+            throw new Error("Method not implemented.");
+        }
+        die() {
+            throw new Error("Method not implemented.");
+        }
+        update() {
+            this.move();
+        }
+        async initializeAnimations() {
+            let texture = new ƒ.TextureImage();
+            await texture.load(this.textureSrc);
+            let coat = new ƒ.CoatTextured(ƒ.Color.CSS("white"), texture);
+            let animationFrames = 2;
+            let origin = ƒ.ORIGIN2D.CENTER;
+            let offsetNext = ƒ.Vector2.X(16);
+            let rectangles = { "idle": [0, 0, 16, 16], "death": [32, 0, 16, 16] };
+            this.initializeAnimationsByFrames(coat, rectangles, animationFrames, origin, offsetNext);
+            this.spriteNode.setAnimation(this.animations.idle);
+            // this.animState = Frame.Idle;
+            this.spriteNode.setFrameDirection(1);
+            this.spriteNode.framerate = 6;
+        }
+    }
+    Script.Octo = Octo;
 })(Script || (Script = {}));
 var Script;
 (function (Script) {

@@ -7,30 +7,38 @@ namespace Script {
   let power: number = 5;
 
 
-  interface Rectangles { [label: string]: number[]; }
   enum Frames {
     RightIdle, Right, RightUp, LeftIdle, Left, LeftUp
   };
+
+  interface Timeout { timeoutID: number, duration: number };
 
   import ƒ = FudgeCore;
   export class Flame extends Character {
     protected textureSrc: string = "./Images/H-Sheet32x32.png";
     protected animations: ƒAid.SpriteSheetAnimations = {};
 
-    velocity: ƒ.Vector2 = new ƒ.Vector2();
-    protected speed: number = speed;
-    protected health: number = health;
-    protected power: number = power;
+    /**
+     * saves the id from the last started timeout
+     */
+    private timeout: Timeout;
 
-    lightNode: ƒ.Node;
+    private velocity: ƒ.Vector2 = new ƒ.Vector2();
+
+    private lightNode: ƒ.Node;
 
     constructor() {
-      super("Flame");
-      this.mtxLocal.translateZ(1);
+      super("Flame", new ƒ.Vector2(32, 32));
+
+      this.speed = speed;
+      this.health = health;
+      this.power = power;
+
       this.spriteNode = new ƒAid.NodeSprite("FlameSprite");
       this.spriteNode.addComponent(new ƒ.ComponentTransform);
       this.appendChild(this.spriteNode);
 
+      // add light
       this.lightNode = new ƒ.Node("FlameLight");
       this.lightNode.addComponent(new ƒ.ComponentTransform);
       let light: ƒ.Light = new ƒ.LightPoint(ƒ.Color.CSS("white"));
@@ -39,7 +47,6 @@ namespace Script {
       this.lightNode.mtxLocal.translateZ(1);
       this.lightNode.mtxLocal.scale(ƒ.Vector3.ONE(20));
       this.appendChild(this.lightNode);
-
     }
 
     public get getSpeed(): number {
@@ -64,8 +71,25 @@ namespace Script {
 
     }
 
-    public takeDamage(): void {
+    public takeDamage(_sourcePower: number, _sourcePos: ƒ.Vector2 | ƒ.Vector3): void {
+      super.takeDamage(_sourcePower, _sourcePos);
 
+      this.startIFrames(_sourcePower * 1000);
+    }
+
+    private startIFrames(_timeoutDuration: number): void {
+      this.hasIFrames = true;
+
+      if (this.timeout.duration > _timeoutDuration) {
+        return;
+      }
+
+      clearTimeout(this.timeout.timeoutID);
+
+      this.timeout.timeoutID = setTimeout(() => {
+        this.hasIFrames = false;
+      }, _timeoutDuration);
+      this.timeout.duration = _timeoutDuration;
     }
 
     public update(): void {
@@ -85,12 +109,17 @@ namespace Script {
       else {
         if (this.velocity.y > 0)
           this.chooseAnimation(Frames.LeftUp);
-          else {
+        else {
           if (getAmount(this.velocity.y) > getAmount(this.velocity.x))
             this.chooseAnimation(Frames.LeftIdle);
           else
             this.chooseAnimation(Frames.Left);
         }
+      }
+
+      this.timeout.duration--;
+      if (this.timeout.duration < 0) {
+        this.timeout = { timeoutID: 0, duration: 0 };
       }
 
     }
@@ -120,20 +149,6 @@ namespace Script {
 
     }
 
-    /**
-    * initializes multiple animation with the same amount of frames
-    */
-    private initializeAnimationsByFrames(_coat: ƒ.CoatTextured, _rectangles: Rectangles, _frames: number, _orig: ƒ.ORIGIN2D, _offsetNext: ƒ.Vector2): void {
-      for (let key in _rectangles) {
-        const rec: number[] = _rectangles[key];
-        let anim: ƒAid.SpriteSheetAnimation = new ƒAid.SpriteSheetAnimation(key, _coat);
-        let fRec: ƒ.Rectangle = ƒ.Rectangle.GET(rec[0], rec[1], rec[2], rec[3]);
-        anim.generateByGrid(fRec, _frames, this.resolution, _orig, _offsetNext);
-        console.log(key);
-
-        this.animations[key] = anim;
-      }
-    }
 
     /**
      * adjusts the animation to the given _state

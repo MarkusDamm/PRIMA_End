@@ -6,11 +6,13 @@ namespace Script {
   let stageDimension: ƒ.Vector2 = new ƒ.Vector2(50, 50);
   let floorTileSrc: string = "./Images/Floor-TileBorderless24x24.png";
 
-
+  // global variables
   let viewport: ƒ.Viewport;
   let branch: ƒ.Node;
   export let camNode: ƒ.Node;
   export let flame: Flame;
+  let characters: Character[] = [];
+
   document.addEventListener("interactiveViewportStarted", <EventListener><unknown>start);
 
   window.addEventListener("load", init);
@@ -70,17 +72,27 @@ namespace Script {
     document.dispatchEvent(new CustomEvent("startedPrototype", { bubbles: true, detail: viewport }))
 
     let floorTexture: ƒ.TextureImage = new ƒ.TextureImage();
-    await floorTexture.load(floorTileSrc);      
+    await floorTexture.load(floorTileSrc);
     setUpFloor(floorTexture);
 
     flame = new Flame();
     Control.getInstance();
     flame.initializeAnimations();
-    branch.addChild(flame);
+    branch.appendChild(flame);
+    characters.push(flame);
+
+    addEnemy();
 
     ƒ.Loop.addEventListener(ƒ.EVENT.LOOP_FRAME, update);
 
     ƒ.Loop.start();  // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
+  }
+
+  function addEnemy(): void {
+    let enemy: Octo = new Octo();
+    enemy.initializeAnimations();
+    branch.appendChild(enemy);
+    characters.push(enemy);
   }
 
   function update(_event: Event): void {
@@ -88,11 +100,36 @@ namespace Script {
     // update Control, which also moves the camera
     Control.getInstance().update(deltaTime);
     // update Character
-    flame.update();
+    for (const character of characters) {
+      character.update();
+    }
+
+    checkHitbox();
 
     // ƒ.Physics.simulate();  // if physics is included and used
     viewport.draw();
     // ƒ.AudioManager.default.update();
+  }
+
+  function checkHitbox(): void {
+    for (const character of characters) {
+      if (character == flame) {
+
+        continue;
+      }
+      
+      let posDifference: ƒ.Vector3 | ƒ.Vector2 = ƒ.Vector3.DIFFERENCE(flame.mtxLocal.translation, character.mtxLocal.translation);
+      posDifference = posDifference.toVector2();
+      if (posDifference.magnitude < 5) {
+        
+        let dimensions: ƒ.Vector2 = ƒ.Vector2.SUM(flame.hitbox, character.hitbox);
+        posDifference = new ƒ.Vector2(getAmount(posDifference.x), getAmount(posDifference.y));
+        if (dimensions.x > posDifference.x && dimensions.y > posDifference.y) {
+
+          flame.takeDamage(character.power, character.mtxLocal.translation);
+        }
+      }
+    }
   }
 
   function stopLoop(_event: KeyboardEvent): void {
@@ -110,8 +147,8 @@ namespace Script {
    */
   function setUpFloor(_texture: ƒ.Texture): void {
     let floorTiles: ƒ.Node = new ƒ.Node("FloorTiles");
-    for (let x: number = -(stageDimension.x / 2); x < stageDimension.y / 2; x+=2) {
-      for (let y: number = -(stageDimension.y / 2); y < stageDimension.y / 2; y+=2) {        
+    for (let x: number = -(stageDimension.x / 2); x < stageDimension.y / 2; x += 2) {
+      for (let y: number = -(stageDimension.y / 2); y < stageDimension.y / 2; y += 2) {
         let floorTile: ƒ.Node = new ƒ.Node("Tile");
         floorTile.addComponent(new ƒ.ComponentTransform);
         floorTile.mtxLocal.translateX(x);

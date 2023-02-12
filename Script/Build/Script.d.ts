@@ -1,30 +1,44 @@
 declare namespace Script {
+    import ƒAid = FudgeAid;
     enum State {
         Idle = 0,
         Move = 1,
         Attack = 2,
-        Die = 3
+        Die = 3,
+        Hurt = 4
+    }
+    interface Rectangles {
+        [label: string]: number[];
     }
     import ƒ = FudgeCore;
     abstract class Character extends ƒ.Node {
         protected textureSrc: string;
         protected spriteNode: ƒAid.NodeSprite;
         protected animations: ƒAid.SpriteSheetAnimations;
-        protected resolution: number;
+        /**
+         * =16; 16 pixel equal one length unit
+        */
+        protected readonly resolution: number;
         protected health: number;
         protected speed: number;
-        protected power: number;
+        power: number;
+        hitbox: ƒ.Vector2;
         protected state: State;
+        protected hasIFrames: boolean;
         /**
          * Create an character (Node) and add an transform-component
          */
-        constructor(_name: string);
+        constructor(_name: string, _spriteDimensions: ƒ.Vector2);
         abstract move(): void;
         abstract attack(): void;
-        abstract takeDamage(): void;
+        takeDamage(_sourcePower: number, _sourcePos: ƒ.Vector2 | ƒ.Vector3): void;
         abstract die(): void;
         abstract update(): void;
-        abstract initializeAnimations(_anim: Animation): void;
+        abstract initializeAnimations(): Promise<void>;
+        /**
+        * initializes multiple animation with the same amount of frames
+        */
+        protected initializeAnimationsByFrames(_coat: ƒ.CoatTextured, _rectangles: Rectangles, _frames: number, _orig: ƒ.ORIGIN2D, _offsetNext: ƒ.Vector2): void;
     }
 }
 declare namespace Script {
@@ -65,23 +79,21 @@ declare namespace Script {
     class Flame extends Character {
         protected textureSrc: string;
         protected animations: ƒAid.SpriteSheetAnimations;
-        velocity: ƒ.Vector2;
-        protected speed: number;
-        protected health: number;
-        protected power: number;
-        lightNode: ƒ.Node;
+        /**
+         * saves the id from the last started timeout
+         */
+        private timeout;
+        private velocity;
+        private lightNode;
         constructor();
         get getSpeed(): number;
         attack(): void;
         move(): void;
         die(): void;
-        takeDamage(): void;
+        takeDamage(_sourcePower: number, _sourcePos: ƒ.Vector2 | ƒ.Vector3): void;
+        private startIFrames;
         update(): void;
         initializeAnimations(): Promise<void>;
-        /**
-        * initializes multiple animation with the same amount of frames
-        */
-        private initializeAnimationsByFrames;
         /**
          * adjusts the animation to the given _state
          * @param _state current Frame
@@ -97,6 +109,21 @@ declare namespace Script {
      * get the amount (Betrag) of a number
      */
     function getAmount(_number: number): number;
+}
+declare namespace Script {
+    import ƒAid = FudgeAid;
+    class Octo extends Character {
+        protected textureSrc: string;
+        protected animations: ƒAid.SpriteSheetAnimations;
+        private target;
+        constructor();
+        move(): void;
+        attack(): void;
+        takeDamage(): void;
+        die(): void;
+        update(): void;
+        initializeAnimations(): Promise<void>;
+    }
 }
 declare namespace Script {
     enum Direction {
