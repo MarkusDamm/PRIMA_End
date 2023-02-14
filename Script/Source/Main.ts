@@ -2,6 +2,13 @@ namespace Script {
   import ƒ = FudgeCore;
   ƒ.Debug.info("Main Program Template running!");
 
+  export enum Affinity {
+    Flame, Enemy
+  };
+  export enum State {
+    Idle, Move, Attack, Die, Hurt
+  };
+
   // from config
   let stageDimension: ƒ.Vector2;
   let floorTileSrc: string;
@@ -151,7 +158,7 @@ namespace Script {
       posDifference = posDifference.toVector2();
       if (posDifference.magnitude < 6) {
         character.dispatchEventToTargetOnly(new CustomEvent("enemyIsClose"))
-        
+
         let dimensions: ƒ.Vector2 = ƒ.Vector2.SUM(flame.hitbox, character.hitbox);
         posDifference = new ƒ.Vector2(getAmount(posDifference.x), getAmount(posDifference.y));
         if (dimensions.x > posDifference.x && dimensions.y > posDifference.y) {

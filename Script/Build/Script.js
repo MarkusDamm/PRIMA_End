@@ -1,14 +1,6 @@
 "use strict";
 var Script;
 (function (Script) {
-    let State;
-    (function (State) {
-        State[State["Idle"] = 0] = "Idle";
-        State[State["Move"] = 1] = "Move";
-        State[State["Attack"] = 2] = "Attack";
-        State[State["Die"] = 3] = "Die";
-        State[State["Hurt"] = 4] = "Hurt";
-    })(State = Script.State || (Script.State = {}));
     var ƒ = FudgeCore;
     class Character extends Script.TexturedMoveable {
         /**
@@ -269,6 +261,21 @@ var Script;
 (function (Script) {
     var ƒ = FudgeCore;
     ƒ.Debug.info("Main Program Template running!");
+    let Affinity;
+    (function (Affinity) {
+        Affinity[Affinity["Flame"] = 0] = "Flame";
+        Affinity[Affinity["Enemy"] = 1] = "Enemy";
+    })(Affinity = Script.Affinity || (Script.Affinity = {}));
+    ;
+    let State;
+    (function (State) {
+        State[State["Idle"] = 0] = "Idle";
+        State[State["Move"] = 1] = "Move";
+        State[State["Attack"] = 2] = "Attack";
+        State[State["Die"] = 3] = "Die";
+        State[State["Hurt"] = 4] = "Hurt";
+    })(State = Script.State || (Script.State = {}));
+    ;
     // from config
     let stageDimension;
     let floorTileSrc;
@@ -498,11 +505,6 @@ var Script;
 })(Script || (Script = {}));
 var Script;
 (function (Script) {
-    let Affinity;
-    (function (Affinity) {
-        Affinity[Affinity["Flame"] = 0] = "Flame";
-        Affinity[Affinity["Enemy"] = 1] = "Enemy";
-    })(Affinity = Script.Affinity || (Script.Affinity = {}));
     class Projectile extends Script.TexturedMoveable {
         constructor(_position, _direction, _affinity, _spriteSource) {
             super("Projectile", "ProjectileSprite");
@@ -536,6 +538,13 @@ var Script;
             this.spriteNode.addComponent(new ƒ.ComponentTransform);
             this.appendChild(this.spriteNode);
         }
+        /**
+         * initializes the animations with
+         * @param _textureSrc URL to texture
+         * @param _rectangles Rectangles (Interface), to set up animation-frames
+         * @param _frames frames of the animation
+         * @param _offsetX offset to next frame
+         */
         async initializeAnimations(_textureSrc, _rectangles, _frames, _offsetX) {
             let texture = new ƒ.TextureImage();
             await texture.load(_textureSrc);

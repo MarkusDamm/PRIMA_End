@@ -1,6 +1,4 @@
 namespace Script {
-  export enum Affinity { Flame, Enemy }
-
   export class Projectile extends TexturedMoveable {
     spriteSource: string;
     velocity: ƒ.Vector2;

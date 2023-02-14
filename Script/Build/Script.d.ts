@@ -1,11 +1,4 @@
 declare namespace Script {
-    enum State {
-        Idle = 0,
-        Move = 1,
-        Attack = 2,
-        Die = 3,
-        Hurt = 4
-    }
     import ƒ = FudgeCore;
     abstract class Character extends TexturedMoveable {
         protected hiddenTextureSrc: string;
@@ -94,6 +87,17 @@ declare namespace Script {
 }
 declare namespace Script {
     import ƒ = FudgeCore;
+    enum Affinity {
+        Flame = 0,
+        Enemy = 1
+    }
+    enum State {
+        Idle = 0,
+        Move = 1,
+        Attack = 2,
+        Die = 3,
+        Hurt = 4
+    }
     let camNode: ƒ.Node;
     let flame: Flame;
     let config: any;
@@ -123,10 +127,6 @@ declare namespace Script {
 declare namespace Script {
 }
 declare namespace Script {
-    enum Affinity {
-        Flame = 0,
-        Enemy = 1
-    }
     class Projectile extends TexturedMoveable {
         spriteSource: string;
         velocity: ƒ.Vector2;
@@ -151,6 +151,13 @@ declare namespace Script {
         protected speed: number;
         constructor(_name: string, _spriteName: string);
         abstract update(_deltaTime: number): void;
+        /**
+         * initializes the animations with
+         * @param _textureSrc URL to texture
+         * @param _rectangles Rectangles (Interface), to set up animation-frames
+         * @param _frames frames of the animation
+         * @param _offsetX offset to next frame
+         */
         initializeAnimations(_textureSrc: string, _rectangles: Rectangles, _frames: number, _offsetX: number): Promise<void>;
         /**
         * initializes multiple animation with the same amount of frames

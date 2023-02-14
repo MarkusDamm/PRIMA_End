@@ -1,9 +1,6 @@
 namespace Script {
-  export enum State {
-    Idle, Move, Attack, Die, Hurt
-  }
-
   import ƒ = FudgeCore;
+
   export abstract class Character extends TexturedMoveable {
     protected hiddenTextureSrc: string = "./Images/Hidden.png";
 

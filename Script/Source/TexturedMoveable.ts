@@ -25,6 +25,13 @@ namespace Script {
 
     public abstract update(_deltaTime: number): void;
 
+    /**
+     * initializes the animations with
+     * @param _textureSrc URL to texture
+     * @param _rectangles Rectangles (Interface), to set up animation-frames
+     * @param _frames frames of the animation 
+     * @param _offsetX offset to next frame
+     */
     public async initializeAnimations(_textureSrc: string, _rectangles: Rectangles, _frames: number, _offsetX: number): Promise<void> {
       let texture: ƒ.TextureImage = new ƒ.TextureImage();
       await texture.load(_textureSrc);
