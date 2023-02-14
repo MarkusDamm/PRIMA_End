@@ -1,7 +1,6 @@
 "use strict";
 var Script;
 (function (Script) {
-    var ƒAid = FudgeAid;
     let State;
     (function (State) {
         State[State["Idle"] = 0] = "Idle";
@@ -11,48 +10,18 @@ var Script;
         State[State["Hurt"] = 4] = "Hurt";
     })(State = Script.State || (Script.State = {}));
     var ƒ = FudgeCore;
-    class Character extends ƒ.Node {
+    class Character extends Script.TexturedMoveable {
         /**
          * Create an character (Node) and add an transform-component
          */
-        constructor(_name, _spriteDimensions) {
-            super(_name);
+        constructor(_name, _spriteName, _spriteDimensions) {
+            super(_name, _spriteName);
             this.hiddenTextureSrc = "./Images/Hidden.png";
-            /**
-             * =16; 16 pixel equal one length unit
-            */
-            this.resolution = 16;
-            this.addComponent(new ƒ.ComponentTransform);
             this.hitbox = ƒ.Vector2.SCALE(_spriteDimensions, 1 / 32);
         }
         takeDamage(_sourcePower, _sourcePos) {
             if (!this.hasIFrames) {
                 this.health -= _sourcePower;
-            }
-        }
-        async initializeAnimations() {
-            let texture = new ƒ.TextureImage();
-            await texture.load(this.hiddenTextureSrc);
-            let coat = new ƒ.CoatTextured(ƒ.Color.CSS("white"), texture);
-            let animationFrames = 1;
-            let origin = ƒ.ORIGIN2D.CENTER;
-            let offsetNext = ƒ.Vector2.X(16);
-            let rectangles = { "hidden": [0, 0, 16, 16] };
-            this.initializeAnimationsByFrames(coat, rectangles, animationFrames, origin, offsetNext);
-            this.spriteNode.setFrameDirection(1);
-            this.spriteNode.framerate = 6;
-        }
-        /**
-        * initializes multiple animation with the same amount of frames
-        */
-        initializeAnimationsByFrames(_coat, _rectangles, _frames, _orig, _offsetNext) {
-            for (let key in _rectangles) {
-                const rec = _rectangles[key];
-                let anim = new ƒAid.SpriteSheetAnimation(key, _coat);
-                let fRec = ƒ.Rectangle.GET(rec[0], rec[1], rec[2], rec[3]);
-                anim.generateByGrid(fRec, _frames, this.resolution, _orig, _offsetNext);
-                console.log(key);
-                this.animations[key] = anim;
             }
         }
     }
@@ -143,7 +112,6 @@ var Script;
 })(Script || (Script = {}));
 var Script;
 (function (Script) {
-    var ƒAid = FudgeAid;
     let Frames;
     (function (Frames) {
         Frames[Frames["RightIdle"] = 0] = "RightIdle";
@@ -158,16 +126,13 @@ var Script;
     var ƒ = FudgeCore;
     class Flame extends Script.Character {
         constructor() {
-            super("Flame", new ƒ.Vector2(32, 32));
+            super("Flame", "FlameSprite", new ƒ.Vector2(32, 32));
             this.textureSrc = "./Images/H-Sheet32x32.png";
             this.animations = {};
             this.velocity = new ƒ.Vector2();
             this.speed = Script.config.player.speed;
             this.health = Script.config.player.health;
             this.power = Script.config.player.power;
-            this.spriteNode = new ƒAid.NodeSprite("FlameSprite");
-            this.spriteNode.addComponent(new ƒ.ComponentTransform);
-            this.appendChild(this.spriteNode);
             // add light
             this.lightNode = new ƒ.Node("FlameLight");
             this.lightNode.addComponent(new ƒ.ComponentTransform);
@@ -181,7 +146,26 @@ var Script;
         get getSpeed() {
             return this.speed;
         }
-        attack() {
+        attack(_event) {
+            let key = _event.key;
+            let attackDirection;
+            switch (key) {
+                case ƒ.KEYBOARD_CODE.ARROW_UP:
+                    attackDirection = ƒ.Vector2.Y();
+                    break;
+                case ƒ.KEYBOARD_CODE.ARROW_RIGHT:
+                    attackDirection = ƒ.Vector2.X(1);
+                    break;
+                case ƒ.KEYBOARD_CODE.ARROW_LEFT:
+                    attackDirection = ƒ.Vector2.X(-1);
+                    break;
+                case ƒ.KEYBOARD_CODE.ARROW_DOWN:
+                    attackDirection = ƒ.Vector2.Y(-1);
+                    break;
+                default: return;
+            }
+            console.log(attackDirection);
+            new Script.Projectile(this.mtxLocal.translation, attackDirection, Script.Affinity.Flame, this.fireballTextureSrc);
         }
         move() {
             let control = Script.Control.getInstance();
@@ -239,22 +223,12 @@ var Script;
             }
         }
         async initializeAnimations() {
-            let texture = new ƒ.TextureImage();
-            await texture.load(this.textureSrc);
-            let coat = new ƒ.CoatTextured(ƒ.Color.CSS("white"), texture);
-            let animationFrames = 1;
-            let origin = ƒ.ORIGIN2D.CENTER;
-            let offsetNext = ƒ.Vector2.X(32);
-            // let offsetWrap: ƒ.Vector2 = ƒ.Vector2.X(32 * 3);
             let rectangles = {
                 "rightIdle": [0, 0, 32, 32], "right": [32, 0, 32, 32], "rightUp": [64, 0, 32, 32],
                 "leftIdle": [0, 32, 32, 32], "left": [32, 32, 32, 32], "leftUp": [64, 32, 32, 32]
             };
-            this.initializeAnimationsByFrames(coat, rectangles, animationFrames, origin, offsetNext);
+            super.initializeAnimations(this.textureSrc, rectangles, 1, 32);
             this.chooseAnimation(Frames.RightIdle);
-            // this.animState = Frame.Idle;
-            this.spriteNode.setFrameDirection(1);
-            this.spriteNode.framerate = 12;
         }
         /**
          * adjusts the animation to the given _state
@@ -361,6 +335,7 @@ var Script;
         Script.flame.initializeAnimations();
         branch.appendChild(Script.flame);
         // characters.push(flame);
+        document.addEventListener("keydown", Script.flame.attack);
         addEnemy(10);
         ƒ.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, update);
         ƒ.Loop.start(); // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
@@ -473,10 +448,9 @@ var Script;
 })(Script || (Script = {}));
 var Script;
 (function (Script) {
-    var ƒAid = FudgeAid;
     class Octo extends Script.Character {
         constructor(_spawnPosition) {
-            super("Octo", new ƒ.Vector2(16, 16));
+            super("Octo", "OctoSprite", new ƒ.Vector2(16, 16));
             this.textureSrc = "./Images/ALTTP_Octo16x16.png";
             this.animations = {};
             this.unveil = () => {
@@ -485,9 +459,6 @@ var Script;
             this.speed = Script.config.enemy.speed;
             this.health = Script.config.enemy.health;
             this.power = Script.config.enemy.power;
-            this.spriteNode = new ƒAid.NodeSprite("FlameSprite");
-            this.spriteNode.addComponent(new ƒ.ComponentTransform);
-            this.appendChild(this.spriteNode);
             this.mtxLocal.translate(_spawnPosition);
             this.targetUpdateTimeout = { timeoutID: 0, duration: 0 };
             this.updateTarget();
@@ -517,75 +488,78 @@ var Script;
             this.move(_deltaTime);
         }
         async initializeAnimations() {
-            super.initializeAnimations();
-            let texture = new ƒ.TextureImage();
-            await texture.load(this.textureSrc);
-            let coat = new ƒ.CoatTextured(ƒ.Color.CSS("white"), texture);
-            let animationFrames = 2;
-            let origin = ƒ.ORIGIN2D.CENTER;
-            let offsetNext = ƒ.Vector2.X(16);
+            super.initializeAnimations(this.hiddenTextureSrc, { "hidden": [0, 0, 16, 16] }, 1, 16);
             let rectangles = { "idle": [0, 0, 16, 16], "death": [32, 0, 16, 16] };
-            this.initializeAnimationsByFrames(coat, rectangles, animationFrames, origin, offsetNext);
+            super.initializeAnimations(this.textureSrc, rectangles, 2, 16);
             this.spriteNode.setAnimation(this.animations.hidden);
-            // this.animState = Frame.Idle;
-            this.spriteNode.setFrameDirection(1);
-            this.spriteNode.framerate = 6;
         }
     }
     Script.Octo = Octo;
 })(Script || (Script = {}));
 var Script;
 (function (Script) {
-    let Direction;
-    (function (Direction) {
-        Direction[Direction["Up"] = 0] = "Up";
-        Direction[Direction["Down"] = 1] = "Down";
-        Direction[Direction["Right"] = 2] = "Right";
-        Direction[Direction["Left"] = 3] = "Left";
-    })(Direction || (Direction = {}));
-    class Particle extends ƒAid.NodeSprite {
-        /**
-         * create
-         */
-        constructor(_direction) {
-            super("Particle");
+    let Affinity;
+    (function (Affinity) {
+        Affinity[Affinity["Flame"] = 0] = "Flame";
+        Affinity[Affinity["Enemy"] = 1] = "Enemy";
+    })(Affinity = Script.Affinity || (Script.Affinity = {}));
+    class Projectile extends Script.TexturedMoveable {
+        constructor(_position, _direction, _affinity, _spriteSource) {
+            super("Projectile", "ProjectileSprite");
             this.addComponent(new ƒ.ComponentTransform);
-            this.color = ƒ.Color.CSS("white");
-            this.particleDirection = _direction;
-            this.velocity = Particle.createRandomDirectionVector(this.particleDirection);
+            this.mtxLocal.translate(_position);
+            _direction.normalize;
+            _direction.scale(this.speed);
+            this.velocity = _direction;
+            this.affinity = _affinity;
+            this.spriteSource = _spriteSource;
         }
-        set color(_color) {
-            this.color = _color;
-        }
-        setColorWithString(_color) {
-            this.color = ƒ.Color.CSS(_color);
-        }
-        static createRandomDirectionVector(_direction) {
-            let direction = new ƒ.Vector2();
-            switch (_direction) {
-                case Direction.Up:
-                    direction.y = 5;
-                    direction.x = Math.random() * 10 - 5;
-                    break;
-                case Direction.Down:
-                    direction.y = -5;
-                    direction.x = Math.random() * 10 - 5;
-                    break;
-                case Direction.Right:
-                    direction.x = 5;
-                    direction.y = Math.random() * 10 - 5;
-                    break;
-                case Direction.Left:
-                    direction.x = 5;
-                    direction.y = Math.random() * 10 - 5;
-                    break;
-                default:
-                    console.log("No valid direction");
-                    break;
-            }
-            return direction;
+        update(_deltaTime) {
+            throw new Error("Method not implemented.");
         }
     }
-    Script.Particle = Particle;
+    Script.Projectile = Projectile;
+})(Script || (Script = {}));
+var Script;
+(function (Script) {
+    var ƒ = FudgeCore;
+    ;
+    class TexturedMoveable extends ƒ.Node {
+        constructor(_name, _spriteName) {
+            super(_name);
+            /**
+             * =16; 16 pixel equal one length unit
+            */
+            this.resolution = 16;
+            this.addComponent(new ƒ.ComponentTransform);
+            this.spriteNode = new ƒAid.NodeSprite(_spriteName);
+            this.spriteNode.addComponent(new ƒ.ComponentTransform);
+            this.appendChild(this.spriteNode);
+        }
+        async initializeAnimations(_textureSrc, _rectangles, _frames, _offsetX) {
+            let texture = new ƒ.TextureImage();
+            await texture.load(_textureSrc);
+            let coat = new ƒ.CoatTextured(ƒ.Color.CSS("white"), texture);
+            let origin = ƒ.ORIGIN2D.CENTER;
+            let offsetNext = ƒ.Vector2.X(_offsetX);
+            this.initializeAnimationsByFrames(coat, _rectangles, _frames, origin, offsetNext);
+            this.spriteNode.setFrameDirection(1);
+            this.spriteNode.framerate = 6;
+        }
+        /**
+        * initializes multiple animation with the same amount of frames
+        */
+        initializeAnimationsByFrames(_coat, _rectangles, _frames, _orig, _offsetNext) {
+            for (let key in _rectangles) {
+                const rec = _rectangles[key];
+                let anim = new ƒAid.SpriteSheetAnimation(key, _coat);
+                let fRec = ƒ.Rectangle.GET(rec[0], rec[1], rec[2], rec[3]);
+                anim.generateByGrid(fRec, _frames, this.resolution, _orig, _offsetNext);
+                console.log(key);
+                this.animations[key] = anim;
+            }
+        }
+    }
+    Script.TexturedMoveable = TexturedMoveable;
 })(Script || (Script = {}));
 //# sourceMappingURL=Script.js.map

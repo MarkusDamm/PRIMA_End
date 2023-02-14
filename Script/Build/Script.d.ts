@@ -1,5 +1,4 @@
 declare namespace Script {
-    import ƒAid = FudgeAid;
     enum State {
         Idle = 0,
         Move = 1,
@@ -7,21 +6,10 @@ declare namespace Script {
         Die = 3,
         Hurt = 4
     }
-    interface Rectangles {
-        [label: string]: number[];
-    }
     import ƒ = FudgeCore;
-    abstract class Character extends ƒ.Node {
-        protected textureSrc: string;
+    abstract class Character extends TexturedMoveable {
         protected hiddenTextureSrc: string;
-        protected spriteNode: ƒAid.NodeSprite;
-        protected animations: ƒAid.SpriteSheetAnimations;
-        /**
-         * =16; 16 pixel equal one length unit
-        */
-        protected readonly resolution: number;
         protected health: number;
-        protected speed: number;
         power: number;
         hitbox: ƒ.Vector2;
         protected state: State;
@@ -29,17 +17,11 @@ declare namespace Script {
         /**
          * Create an character (Node) and add an transform-component
          */
-        constructor(_name: string, _spriteDimensions: ƒ.Vector2);
-        abstract attack(): void;
+        constructor(_name: string, _spriteName: string, _spriteDimensions: ƒ.Vector2);
+        abstract attack(_event?: Event | KeyboardEvent): void;
         takeDamage(_sourcePower: number, _sourcePos: ƒ.Vector3): void;
         abstract die(): void;
         abstract unveil(): void;
-        abstract update(_deltaTime: number): void;
-        initializeAnimations(): Promise<void>;
-        /**
-        * initializes multiple animation with the same amount of frames
-        */
-        protected initializeAnimationsByFrames(_coat: ƒ.CoatTextured, _rectangles: Rectangles, _frames: number, _orig: ƒ.ORIGIN2D, _offsetNext: ƒ.Vector2): void;
     }
 }
 declare namespace Script {
@@ -86,6 +68,7 @@ declare namespace Script {
     class Flame extends Character {
         protected textureSrc: string;
         protected animations: ƒAid.SpriteSheetAnimations;
+        fireballTextureSrc: string;
         /**
          * saves the id from the last started timeout related to taking damage as well as the remaining duration
          */
@@ -94,7 +77,7 @@ declare namespace Script {
         private lightNode;
         constructor();
         get getSpeed(): number;
-        attack(): void;
+        attack(_event: KeyboardEvent): void;
         protected move(): void;
         die(): void;
         takeDamage(_sourcePower: number, _sourcePos: ƒ.Vector3): void;
@@ -138,22 +121,40 @@ declare namespace Script {
     }
 }
 declare namespace Script {
-    enum Direction {
-        Up = 0,
-        Down = 1,
-        Right = 2,
-        Left = 3
+}
+declare namespace Script {
+    enum Affinity {
+        Flame = 0,
+        Enemy = 1
     }
-    export class Particle extends ƒAid.NodeSprite {
-        set color(_color: ƒ.Color);
-        protected velocity: ƒ.Vector2;
-        protected particleDirection: Direction;
+    class Projectile extends TexturedMoveable {
+        spriteSource: string;
+        velocity: ƒ.Vector2;
+        affinity: Affinity;
+        constructor(_position: ƒ.Vector3, _direction: ƒ.Vector2, _affinity: Affinity, _spriteSource: string);
+        update(_deltaTime: number): void;
+    }
+}
+declare namespace Script {
+    import ƒ = FudgeCore;
+    interface Rectangles {
+        [label: string]: number[];
+    }
+    abstract class TexturedMoveable extends ƒ.Node {
+        protected textureSrc: string;
+        protected spriteNode: ƒAid.NodeSprite;
+        protected animations: ƒAid.SpriteSheetAnimations;
         /**
-         * create
-         */
-        constructor(_direction: Direction);
-        setColorWithString(_color: string): void;
-        private static createRandomDirectionVector;
+         * =16; 16 pixel equal one length unit
+        */
+        protected readonly resolution: number;
+        protected speed: number;
+        constructor(_name: string, _spriteName: string);
+        abstract update(_deltaTime: number): void;
+        initializeAnimations(_textureSrc: string, _rectangles: Rectangles, _frames: number, _offsetX: number): Promise<void>;
+        /**
+        * initializes multiple animation with the same amount of frames
+        */
+        protected initializeAnimationsByFrames(_coat: ƒ.CoatTextured, _rectangles: Rectangles, _frames: number, _orig: ƒ.ORIGIN2D, _offsetNext: ƒ.Vector2): void;
     }
-    export {};
 }

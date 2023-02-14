@@ -1,17 +1,14 @@
 namespace Script {
-  enum Direction { Up, Down, Right, Left }
-
-  export class Particle extends ƒAid.NodeSprite {
-
-    public set color(_color: ƒ.Color) {
-      this.color = _color;
-    }
+  // enum Direction { Up, Down, Right, Left }
+/*
+  export class Particle extends TexturedMoveable {
     protected velocity: ƒ.Vector2;
     protected particleDirection: Direction;
 
     /**
      * create
      */
+    /*
     constructor(_direction: Direction) {
       super("Particle");
       this.addComponent(new ƒ.ComponentTransform);
@@ -19,8 +16,6 @@ namespace Script {
       this.particleDirection = _direction;
       this.velocity = Particle.createRandomDirectionVector(this.particleDirection);
     }
-
-
 
     public setColorWithString(_color: string) {
       this.color = ƒ.Color.CSS(_color);
@@ -55,5 +50,13 @@ namespace Script {
       return direction;
     }
 
-  }
+    public update(_deltaTime: number): void {
+      throw new Error("Method not implemented.");
+    }
+
+    public set color(_color: ƒ.Color) {
+      this.color = _color;
+    }
+    
+  } */
 }

@@ -10,15 +10,11 @@ namespace Script {
 
 
     constructor(_spawnPosition: ƒ.Vector3) {
-      super("Octo", new ƒ.Vector2(16, 16));
+      super("Octo", "OctoSprite", new ƒ.Vector2(16, 16));
 
       this.speed = config.enemy.speed;
       this.health = config.enemy.health;
       this.power = config.enemy.power;
-
-      this.spriteNode = new ƒAid.NodeSprite("FlameSprite");
-      this.spriteNode.addComponent(new ƒ.ComponentTransform);
-      this.appendChild(this.spriteNode);
 
       this.mtxLocal.translate(_spawnPosition);
 
@@ -59,24 +55,12 @@ namespace Script {
     }
 
     public async initializeAnimations(): Promise<void> {
-      super.initializeAnimations();
-      let texture: ƒ.TextureImage = new ƒ.TextureImage();
-      await texture.load(this.textureSrc);
-
-      let coat: ƒ.CoatTextured = new ƒ.CoatTextured(ƒ.Color.CSS("white"), texture);
-
-      let animationFrames: number = 2;
-      let origin: ƒ.ORIGIN2D = ƒ.ORIGIN2D.CENTER;
-      let offsetNext: ƒ.Vector2 = ƒ.Vector2.X(16);
+      super.initializeAnimations(this.hiddenTextureSrc, { "hidden": [0, 0, 16, 16] }, 1, 16);
 
       let rectangles: Rectangles = { "idle": [0, 0, 16, 16], "death": [32, 0, 16, 16] };
-
-      this.initializeAnimationsByFrames(coat, rectangles, animationFrames, origin, offsetNext);
+      super.initializeAnimations(this.textureSrc, rectangles, 2, 16);
 
       this.spriteNode.setAnimation(<ƒAid.SpriteSheetAnimation>this.animations.hidden);
-      // this.animState = Frame.Idle;
-      this.spriteNode.setFrameDirection(1);
-      this.spriteNode.framerate = 6;
 
     }
 

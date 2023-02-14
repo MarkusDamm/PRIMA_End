@@ -88,6 +88,8 @@ namespace Script {
     branch.appendChild(flame);
     // characters.push(flame);
 
+    document.addEventListener("keydown", flame.attack);
+
     addEnemy(10);
 
     ƒ.Loop.addEventListener(ƒ.EVENT.LOOP_FRAME, update);
