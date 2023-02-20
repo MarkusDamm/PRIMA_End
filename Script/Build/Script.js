@@ -2,19 +2,73 @@
 var Script;
 (function (Script) {
     var ƒ = FudgeCore;
+    var ƒAid = FudgeAid;
+    ;
+    class TexturedMoveable extends ƒ.Node {
+        constructor(_name, _spriteName, _spriteDimensions) {
+            super(_name);
+            /**
+             * =16; 16 pixel equal one length unit
+            */
+            this.resolution = 16;
+            this.addComponent(new ƒ.ComponentTransform);
+            this.spriteNode = new ƒAid.NodeSprite(_spriteName);
+            this.spriteNode.addComponent(new ƒ.ComponentTransform);
+            this.appendChild(this.spriteNode);
+            this.hitbox = ƒ.Vector2.SCALE(_spriteDimensions, 1 / 32);
+        }
+        /**
+         * initializes the animations with
+         * @param _textureSrc URL to texture
+         * @param _rectangles Rectangles (Interface), to set up animation-frames
+         * @param _frames frames of the animation
+         * @param _offsetX offset to next frame
+         */
+        async initializeAnimations(_textureSrc, _rectangles, _frames, _offsetX) {
+            let texture = new ƒ.TextureImage();
+            await texture.load(_textureSrc);
+            let coat = new ƒ.CoatTextured(ƒ.Color.CSS("white"), texture);
+            let origin = ƒ.ORIGIN2D.CENTER;
+            let offsetNext = ƒ.Vector2.X(_offsetX);
+            this.initializeAnimationsByFrames(coat, _rectangles, _frames, origin, offsetNext);
+            this.spriteNode.setFrameDirection(1);
+            this.spriteNode.framerate = 6;
+        }
+        /**
+        * initializes multiple animation with the same amount of frames
+        */
+        initializeAnimationsByFrames(_coat, _rectangles, _frames, _orig, _offsetNext) {
+            for (let key in _rectangles) {
+                const rec = _rectangles[key];
+                let anim = new ƒAid.SpriteSheetAnimation(key, _coat);
+                let fRec = ƒ.Rectangle.GET(rec[0], rec[1], rec[2], rec[3]);
+                anim.generateByGrid(fRec, _frames, this.resolution, _orig, _offsetNext);
+                console.log(key);
+                this.animations[key] = anim;
+            }
+        }
+    }
+    Script.TexturedMoveable = TexturedMoveable;
+})(Script || (Script = {}));
+///<reference path="./TexturedMoveable.ts"/>
+var Script;
+///<reference path="./TexturedMoveable.ts"/>
+(function (Script) {
     class Character extends Script.TexturedMoveable {
         /**
          * Create an character (Node) and add an transform-component
          */
         constructor(_name, _spriteName, _spriteDimensions) {
-            super(_name, _spriteName);
+            super(_name, _spriteName, _spriteDimensions);
             this.hiddenTextureSrc = "./Images/Hidden.png";
-            this.hitbox = ƒ.Vector2.SCALE(_spriteDimensions, 1 / 32);
-        }
-        takeDamage(_sourcePower, _sourcePos) {
-            if (!this.hasIFrames) {
-                this.health -= _sourcePower;
-            }
+            this.hasIFrames = false;
+            this.takeDamage = (_sourcePower, _sourcePos) => {
+                if (!this.hasIFrames) {
+                    this.health -= _sourcePower;
+                }
+                console.log(this.health);
+            };
+            this.addEventListener("Damage", this.takeDamage);
         }
     }
     Script.Character = Character;
@@ -102,7 +156,9 @@ var Script;
     CustomComponentScript.iSubclass = ƒ.Component.registerSubclass(CustomComponentScript);
     Script.CustomComponentScript = CustomComponentScript;
 })(Script || (Script = {}));
+///<reference path="./Character.ts"/>
 var Script;
+///<reference path="./Character.ts"/>
 (function (Script) {
     let Frames;
     (function (Frames) {
@@ -121,7 +177,37 @@ var Script;
             super("Flame", "FlameSprite", new ƒ.Vector2(32, 32));
             this.textureSrc = "./Images/H-Sheet32x32.png";
             this.animations = {};
+            this.fireballTextureSrc = "./Images/Fireball16x16.png";
+            this.affinity = Script.Affinity.Flame;
             this.velocity = new ƒ.Vector2();
+            this.attack = (_event) => {
+                let key = _event.key;
+                let attackDirection;
+                switch (key) {
+                    case ƒ.KEYBOARD_CODE.ARROW_UP:
+                        attackDirection = ƒ.Vector2.Y();
+                        break;
+                    case ƒ.KEYBOARD_CODE.ARROW_RIGHT:
+                        attackDirection = ƒ.Vector2.X(1);
+                        break;
+                    case ƒ.KEYBOARD_CODE.ARROW_LEFT:
+                        attackDirection = ƒ.Vector2.X(-1);
+                        break;
+                    case ƒ.KEYBOARD_CODE.ARROW_DOWN:
+                        attackDirection = ƒ.Vector2.Y(-1);
+                        break;
+                    default: return;
+                }
+                // console.log(this.mtxLocal.translation);
+                let projectile = new Script.Projectile(this.mtxLocal.translation, attackDirection, Script.Affinity.Flame, this.power, this.fireballTextureSrc);
+                Script.hdlCreation(projectile, Script.projectiles);
+            };
+            this.takeDamage = (_sourcePower, _sourcePos) => {
+                super.takeDamage(_sourcePower, _sourcePos);
+                if (!this.hasIFrames) {
+                    this.startIFrames(_sourcePower * 1000);
+                }
+            };
             this.speed = Script.config.player.speed;
             this.health = Script.config.player.health;
             this.power = Script.config.player.power;
@@ -138,27 +224,6 @@ var Script;
         get getSpeed() {
             return this.speed;
         }
-        attack(_event) {
-            let key = _event.key;
-            let attackDirection;
-            switch (key) {
-                case ƒ.KEYBOARD_CODE.ARROW_UP:
-                    attackDirection = ƒ.Vector2.Y();
-                    break;
-                case ƒ.KEYBOARD_CODE.ARROW_RIGHT:
-                    attackDirection = ƒ.Vector2.X(1);
-                    break;
-                case ƒ.KEYBOARD_CODE.ARROW_LEFT:
-                    attackDirection = ƒ.Vector2.X(-1);
-                    break;
-                case ƒ.KEYBOARD_CODE.ARROW_DOWN:
-                    attackDirection = ƒ.Vector2.Y(-1);
-                    break;
-                default: return;
-            }
-            console.log(attackDirection);
-            new Script.Projectile(this.mtxLocal.translation, attackDirection, Script.Affinity.Flame, this.fireballTextureSrc);
-        }
         move() {
             let control = Script.Control.getInstance();
             // get inputs from control-class
@@ -168,12 +233,6 @@ var Script;
             this.mtxLocal.translate(this.velocity.toVector3());
         }
         die() {
-        }
-        takeDamage(_sourcePower, _sourcePos) {
-            super.takeDamage(_sourcePower, _sourcePos);
-            if (!this.hasIFrames) {
-                this.startIFrames(_sourcePower * 1000);
-            }
         }
         startIFrames(_timeoutDuration) {
             this.hasIFrames = true;
@@ -282,7 +341,8 @@ var Script;
     // global variables
     let viewport;
     let branch;
-    let characters = [];
+    Script.characters = [];
+    Script.projectiles = [];
     document.addEventListener("interactiveViewportStarted", start);
     window.addEventListener("load", init);
     window.addEventListener("keydown", stopLoop);
@@ -361,10 +421,11 @@ var Script;
                 randomY = randomNumber(stageDimension.y / 4, stageDimension.y / 2);
             let randomPos = new ƒ.Vector3(randomX, randomY);
             let enemy = new Script.Octo(randomPos);
-            enemy.initializeAnimations();
-            branch.appendChild(enemy);
             enemy.addEventListener("enemyIsClose", enemy.unveil);
-            characters.push(enemy);
+            hdlCreation(enemy, Script.characters);
+            // enemy.initializeAnimations();
+            // branch.appendChild(enemy);
+            // characters.push(enemy);
         }
     }
     function randomNumber(_lowEnd, _highEnd) {
@@ -378,8 +439,11 @@ var Script;
         Script.Control.getInstance().update(deltaTime);
         // update Character
         Script.flame.update();
-        for (const character of characters) {
+        for (const character of Script.characters) {
             character.update(deltaTime);
+        }
+        for (const projectile of Script.projectiles) {
+            projectile.update(deltaTime);
         }
         checkHitbox();
         // ƒ.Physics.simulate();  // if physics is included and used
@@ -387,10 +451,7 @@ var Script;
         // ƒ.AudioManager.default.update();
     }
     function checkHitbox() {
-        for (const character of characters) {
-            // if (character == flame) {
-            //   continue;
-            // }
+        for (const character of Script.characters) {
             let posDifference = ƒ.Vector3.DIFFERENCE(Script.flame.mtxLocal.translation, character.mtxLocal.translation);
             posDifference = posDifference.toVector2();
             if (posDifference.magnitude < 6) {
@@ -412,6 +473,13 @@ var Script;
             ƒ.Loop.continue();
         }
     }
+    function hdlCreation(_creation, _array) {
+        _creation.initializeAnimations();
+        branch.appendChild(_creation);
+        _array.push(_creation);
+        console.log(_creation, _array);
+    }
+    Script.hdlCreation = hdlCreation;
     /**
      * set up the floor-tiles with a given texture for the whole stage
      */
@@ -460,12 +528,20 @@ var Script;
             super("Octo", "OctoSprite", new ƒ.Vector2(16, 16));
             this.textureSrc = "./Images/ALTTP_Octo16x16.png";
             this.animations = {};
+            this.affinity = Script.Affinity.Enemy;
+            this.hasIFrames = false;
+            this.health = 10;
+            this.takeDamage = (_sourcePower, _sourcePos) => {
+                super.takeDamage(_sourcePower, _sourcePos);
+                console.log(this, "takes damage ", _sourcePower);
+            };
             this.unveil = () => {
                 this.spriteNode.setAnimation(this.animations.idle);
             };
             this.speed = Script.config.enemy.speed;
             this.health = Script.config.enemy.health;
             this.power = Script.config.enemy.power;
+            this.hasIFrames = false;
             this.mtxLocal.translate(_spawnPosition);
             this.targetUpdateTimeout = { timeoutID: 0, duration: 0 };
             this.updateTarget();
@@ -485,9 +561,6 @@ var Script;
         }
         attack() {
         }
-        takeDamage() {
-            throw new Error("Method not implemented.");
-        }
         die() {
             throw new Error("Method not implemented.");
         }
@@ -495,80 +568,74 @@ var Script;
             this.move(_deltaTime);
         }
         async initializeAnimations() {
-            super.initializeAnimations(this.hiddenTextureSrc, { "hidden": [0, 0, 16, 16] }, 1, 16);
-            let rectangles = { "idle": [0, 0, 16, 16], "death": [32, 0, 16, 16] };
-            super.initializeAnimations(this.textureSrc, rectangles, 2, 16);
+            let rectangles = { "hidden": [0, 0, 16, 16] };
+            await super.initializeAnimations(this.hiddenTextureSrc, rectangles, 1, 16);
+            rectangles = { "idle": [0, 0, 16, 16], "death": [32, 0, 16, 16] };
+            await super.initializeAnimations(this.textureSrc, rectangles, 2, 16);
             this.spriteNode.setAnimation(this.animations.hidden);
         }
     }
     Script.Octo = Octo;
 })(Script || (Script = {}));
+///<reference path="./TexturedMoveable.ts"/>
 var Script;
+///<reference path="./TexturedMoveable.ts"/>
 (function (Script) {
     class Projectile extends Script.TexturedMoveable {
-        constructor(_position, _direction, _affinity, _spriteSource) {
-            super("Projectile", "ProjectileSprite");
-            this.addComponent(new ƒ.ComponentTransform);
+        constructor(_position, _direction, _affinity, _power, _spriteSource) {
+            super("Projectile", "ProjectileSprite", Projectile.spriteDimensions);
+            this.textureSrc = "./Images/Fireball16x16.png";
+            this.animations = {};
             this.mtxLocal.translate(_position);
-            _direction.normalize;
-            _direction.scale(this.speed);
-            this.velocity = _direction;
+            _direction.normalize(this.speed);
+            // _direction.scale(this.speed);
+            this.velocity = _direction.toVector3();
             this.affinity = _affinity;
-            this.spriteSource = _spriteSource;
+            this.textureSrc = _spriteSource;
+            this.power = _power;
+            // add light
+            let lightNode = new ƒ.Node("FlameLight");
+            lightNode.addComponent(new ƒ.ComponentTransform);
+            let light = new ƒ.LightPoint(ƒ.Color.CSS("white"));
+            let cmpLight = new ƒ.ComponentLight(light);
+            lightNode.addComponent(cmpLight);
+            lightNode.mtxLocal.scale(ƒ.Vector3.ONE(5));
+            this.appendChild(lightNode);
         }
         update(_deltaTime) {
-            throw new Error("Method not implemented.");
+            this.move(_deltaTime);
+            this.checkForCollision();
         }
-    }
-    Script.Projectile = Projectile;
-})(Script || (Script = {}));
-var Script;
-(function (Script) {
-    var ƒ = FudgeCore;
-    ;
-    class TexturedMoveable extends ƒ.Node {
-        constructor(_name, _spriteName) {
-            super(_name);
-            /**
-             * =16; 16 pixel equal one length unit
-            */
-            this.resolution = 16;
-            this.addComponent(new ƒ.ComponentTransform);
-            this.spriteNode = new ƒAid.NodeSprite(_spriteName);
-            this.spriteNode.addComponent(new ƒ.ComponentTransform);
-            this.appendChild(this.spriteNode);
+        move(_deltaTime) {
+            let distance = new ƒ.Vector3(this.velocity.x, this.velocity.y);
+            // distance.normalize(this.speed);
+            distance.scale(_deltaTime);
+            this.mtxLocal.translate(distance);
         }
-        /**
-         * initializes the animations with
-         * @param _textureSrc URL to texture
-         * @param _rectangles Rectangles (Interface), to set up animation-frames
-         * @param _frames frames of the animation
-         * @param _offsetX offset to next frame
-         */
-        async initializeAnimations(_textureSrc, _rectangles, _frames, _offsetX) {
-            let texture = new ƒ.TextureImage();
-            await texture.load(_textureSrc);
-            let coat = new ƒ.CoatTextured(ƒ.Color.CSS("white"), texture);
-            let origin = ƒ.ORIGIN2D.CENTER;
-            let offsetNext = ƒ.Vector2.X(_offsetX);
-            this.initializeAnimationsByFrames(coat, _rectangles, _frames, origin, offsetNext);
-            this.spriteNode.setFrameDirection(1);
-            this.spriteNode.framerate = 6;
-        }
-        /**
-        * initializes multiple animation with the same amount of frames
-        */
-        initializeAnimationsByFrames(_coat, _rectangles, _frames, _orig, _offsetNext) {
-            for (let key in _rectangles) {
-                const rec = _rectangles[key];
-                let anim = new ƒAid.SpriteSheetAnimation(key, _coat);
-                let fRec = ƒ.Rectangle.GET(rec[0], rec[1], rec[2], rec[3]);
-                anim.generateByGrid(fRec, _frames, this.resolution, _orig, _offsetNext);
-                console.log(key);
-                this.animations[key] = anim;
+        checkForCollision() {
+            for (const character of Script.characters) {
+                if (this.affinity != character.affinity) {
+                    let posDifference = ƒ.Vector3.DIFFERENCE(this.mtxLocal.translation, character.mtxLocal.translation);
+                    posDifference = posDifference.toVector2();
+                    if (posDifference.magnitude < 6) {
+                        let dimensions = ƒ.Vector2.SUM(this.hitbox, character.hitbox);
+                        posDifference = new ƒ.Vector2(Script.getAmount(posDifference.x), Script.getAmount(posDifference.y));
+                        if (dimensions.x > posDifference.x && dimensions.y > posDifference.y) {
+                            // character.takeDamage(character.power, character.mtxLocal.translation);
+                            let damageEvent = new CustomEvent("Damage", { bubbles: true, detail: { _sourcePower: this.power, _sourcePos: this.mtxLocal.translation } });
+                            character.dispatchEvent(damageEvent);
+                        }
+                    }
+                }
             }
         }
+        async initializeAnimations() {
+            let rectangles = { "idle": [0, 0, 16, 16] };
+            await super.initializeAnimations(this.textureSrc, rectangles, 1, this.resolution);
+            this.spriteNode.setAnimation(this.animations.idle);
+        }
     }
-    Script.TexturedMoveable = TexturedMoveable;
+    Projectile.spriteDimensions = new ƒ.Vector2(16, 16);
+    Script.Projectile = Projectile;
 })(Script || (Script = {}));
 //# sourceMappingURL=Script.js.map

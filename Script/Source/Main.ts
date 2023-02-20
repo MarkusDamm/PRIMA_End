@@ -18,7 +18,8 @@ namespace Script {
   let branch: ƒ.Node;
   export let camNode: ƒ.Node;
   export let flame: Flame;
-  let characters: Character[] = [];
+  export let characters: Character[] = [];
+  export let projectiles: Projectile[] = [];
 
   export let config: any;
 
@@ -117,10 +118,11 @@ namespace Script {
       let randomPos: ƒ.Vector3 = new ƒ.Vector3(randomX, randomY);
 
       let enemy: Octo = new Octo(randomPos);
-      enemy.initializeAnimations();
-      branch.appendChild(enemy);
       enemy.addEventListener("enemyIsClose", enemy.unveil);
-      characters.push(enemy);
+      hdlCreation(enemy, characters);
+      // enemy.initializeAnimations();
+      // branch.appendChild(enemy);
+      // characters.push(enemy);
     }
   }
 
@@ -139,6 +141,9 @@ namespace Script {
     for (const character of characters) {
       character.update(deltaTime);
     }
+    for (const projectile of projectiles) {
+      projectile.update(deltaTime);
+    }
 
     checkHitbox();
 
@@ -149,11 +154,6 @@ namespace Script {
 
   function checkHitbox(): void {
     for (const character of characters) {
-      // if (character == flame) {
-
-      //   continue;
-      // }
-
       let posDifference: ƒ.Vector3 | ƒ.Vector2 = ƒ.Vector3.DIFFERENCE(flame.mtxLocal.translation, character.mtxLocal.translation);
       posDifference = posDifference.toVector2();
       if (posDifference.magnitude < 6) {
@@ -177,6 +177,14 @@ namespace Script {
     if (_event.key == "o") {
       ƒ.Loop.continue();
     }
+  }
+
+  export function hdlCreation(_creation: Projectile | Octo, _array: any[]): void {
+    _creation.initializeAnimations();
+    branch.appendChild(_creation);
+    _array.push(_creation);
+    console.log(_creation, _array);
+
   }
 
   /**

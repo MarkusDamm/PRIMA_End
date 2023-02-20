@@ -1,11 +1,14 @@
 namespace Script {
   import ƒ = FudgeCore;
+  import ƒAid = FudgeAid
+  ;
   export interface Rectangles { [label: string]: number[] };
 
   export abstract class TexturedMoveable extends ƒ.Node {
     protected textureSrc: string;
     protected spriteNode: ƒAid.NodeSprite;
     protected animations: ƒAid.SpriteSheetAnimations;
+    public hitbox: ƒ.Vector2;
 
     /** 
      * =16; 16 pixel equal one length unit
@@ -13,7 +16,7 @@ namespace Script {
     protected readonly resolution: number = 16;
     protected speed: number;
 
-    constructor(_name: string, _spriteName: string) {
+    constructor(_name: string, _spriteName: string, _spriteDimensions: ƒ.Vector2) {
       super(_name);
       this.addComponent(new ƒ.ComponentTransform);
 
@@ -21,6 +24,7 @@ namespace Script {
       this.spriteNode.addComponent(new ƒ.ComponentTransform);
       this.appendChild(this.spriteNode);
 
+      this.hitbox = ƒ.Vector2.SCALE(_spriteDimensions, 1 / 32);
     }
 
     public abstract update(_deltaTime: number): void;

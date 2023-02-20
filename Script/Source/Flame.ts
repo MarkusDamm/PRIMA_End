@@ -1,3 +1,4 @@
+///<reference path="./Character.ts"/>
 namespace Script {
   import ƒAid = FudgeAid;
 
@@ -11,8 +12,9 @@ namespace Script {
   export class Flame extends Character {
     protected textureSrc: string = "./Images/H-Sheet32x32.png";
     protected animations: ƒAid.SpriteSheetAnimations = {};
+    fireballTextureSrc: string = "./Images/Fireball16x16.png";
+    public readonly affinity = Affinity.Flame;
 
-    fireballTextureSrc: string;
     /**
      * saves the id from the last started timeout related to taking damage as well as the remaining duration
      */
@@ -46,7 +48,7 @@ namespace Script {
       return this.speed;
     }
 
-    attack(_event: KeyboardEvent): void {
+    attack = (_event: KeyboardEvent): void => {
       let key: string = _event.key;
       let attackDirection: ƒ.Vector2;
       switch (key) {
@@ -64,9 +66,9 @@ namespace Script {
           break;
         default: return;
       }
-      console.log(attackDirection);
-
-      new Projectile(this.mtxLocal.translation, attackDirection, Affinity.Flame, this.fireballTextureSrc);
+      // console.log(this.mtxLocal.translation);
+      let projectile: Projectile = new Projectile(this.mtxLocal.translation, attackDirection, Affinity.Flame, this.power, this.fireballTextureSrc);
+      hdlCreation(projectile, projectiles);
     }
 
     protected move(): void {
@@ -83,7 +85,7 @@ namespace Script {
 
     }
 
-    public takeDamage(_sourcePower: number, _sourcePos: ƒ.Vector3): void {
+    public takeDamage = (_sourcePower: number, _sourcePos: ƒ.Vector3): void => {
       super.takeDamage(_sourcePower, _sourcePos);
       if (!this.hasIFrames) {
 

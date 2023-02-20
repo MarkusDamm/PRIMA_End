@@ -4,6 +4,9 @@ namespace Script {
   export class Octo extends Character {
     protected textureSrc: string = "./Images/ALTTP_Octo16x16.png";
     protected animations: ƒAid.SpriteSheetAnimations = {};
+    public readonly affinity = Affinity.Enemy;
+    protected hasIFrames: boolean = false;
+    protected health: number = 10;
 
     private target: ƒ.Vector3;
     private targetUpdateTimeout: Timeout;
@@ -15,6 +18,7 @@ namespace Script {
       this.speed = config.enemy.speed;
       this.health = config.enemy.health;
       this.power = config.enemy.power;
+      this.hasIFrames = false;
 
       this.mtxLocal.translate(_spawnPosition);
 
@@ -42,8 +46,10 @@ namespace Script {
 
     }
 
-    public takeDamage(): void {
-      throw new Error("Method not implemented.");
+    public takeDamage = (_sourcePower: number, _sourcePos: ƒ.Vector3): void => {
+      super.takeDamage(_sourcePower, _sourcePos);
+      console.log(this, "takes damage ", _sourcePower);
+      
     }
 
     die(): void {
@@ -55,10 +61,11 @@ namespace Script {
     }
 
     public async initializeAnimations(): Promise<void> {
-      super.initializeAnimations(this.hiddenTextureSrc, { "hidden": [0, 0, 16, 16] }, 1, 16);
+      let rectangles: Rectangles = { "hidden": [0, 0, 16, 16] };
+      await super.initializeAnimations(this.hiddenTextureSrc, rectangles, 1, 16);
 
-      let rectangles: Rectangles = { "idle": [0, 0, 16, 16], "death": [32, 0, 16, 16] };
-      super.initializeAnimations(this.textureSrc, rectangles, 2, 16);
+      rectangles = { "idle": [0, 0, 16, 16], "death": [32, 0, 16, 16] };
+      await super.initializeAnimations(this.textureSrc, rectangles, 2, 16);
 
       this.spriteNode.setAnimation(<ƒAid.SpriteSheetAnimation>this.animations.hidden);
 
