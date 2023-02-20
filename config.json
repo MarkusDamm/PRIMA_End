@@ -2,10 +2,11 @@
   "player": {
     "speed": 10,
     "health": 10,
-    "power": 2
+    "power": 2,
+    "attackCooldown": 400
   },
   "enemy": {
-    "speed": 2,
+    "speed": 3,
     "health": 5,
     "power": 1
   },

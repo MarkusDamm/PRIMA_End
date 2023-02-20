@@ -19,7 +19,7 @@ namespace Script {
      * saves the id from the last started timeout related to taking damage as well as the remaining duration
      */
     private hitTimeout: Timeout;
-
+    private isAttackAvailable: boolean = true;
     private velocity: ƒ.Vector2 = new ƒ.Vector2();
 
     private lightNode: ƒ.Node;
@@ -50,26 +50,33 @@ namespace Script {
     }
 
     attack = (_event: KeyboardEvent): void => {
-      let key: string = _event.key;
-      let attackDirection: ƒ.Vector2;
-      switch (key) {
-        case ƒ.KEYBOARD_CODE.ARROW_UP:
-          attackDirection = ƒ.Vector2.Y();
-          break;
-        case ƒ.KEYBOARD_CODE.ARROW_RIGHT:
-          attackDirection = ƒ.Vector2.X();
-          break;
-        case ƒ.KEYBOARD_CODE.ARROW_LEFT:
-          attackDirection = ƒ.Vector2.X(-1);
-          break;
-        case ƒ.KEYBOARD_CODE.ARROW_DOWN:
-          attackDirection = ƒ.Vector2.Y(-1);
-          break;
-        default: return;
+      if (this.isAttackAvailable) {
+
+        let key: string = _event.key;
+        let attackDirection: ƒ.Vector2;
+        switch (key) {
+          case ƒ.KEYBOARD_CODE.ARROW_UP:
+            attackDirection = ƒ.Vector2.Y();
+            break;
+          case ƒ.KEYBOARD_CODE.ARROW_RIGHT:
+            attackDirection = ƒ.Vector2.X();
+            break;
+          case ƒ.KEYBOARD_CODE.ARROW_LEFT:
+            attackDirection = ƒ.Vector2.X(-1);
+            break;
+          case ƒ.KEYBOARD_CODE.ARROW_DOWN:
+            attackDirection = ƒ.Vector2.Y(-1);
+            break;
+          default: return;
+        }
+        let projectile: Projectile = new Projectile(this.mtxLocal.translation, attackDirection, Affinity.Flame, this.power, this.fireballTextureSrc);
+        hdlCreation(projectile, projectiles);
+
+        this.isAttackAvailable = false;
+        setTimeout(() => {
+          this.isAttackAvailable = true;
+        }, config.player.attackCooldown);
       }
-      // console.log(this.mtxLocal.translation);
-      let projectile: Projectile = new Projectile(this.mtxLocal.translation, attackDirection, Affinity.Flame, this.power, this.fireballTextureSrc);
-      hdlCreation(projectile, projectiles);
     }
 
     protected move(): void {

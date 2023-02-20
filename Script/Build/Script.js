@@ -177,28 +177,34 @@ var Script;
             this.animations = {};
             this.fireballTextureSrc = "./Images/Fireball16x16.png";
             this.affinity = Script.Affinity.Flame;
+            this.isAttackAvailable = true;
             this.velocity = new ƒ.Vector2();
             this.attack = (_event) => {
-                let key = _event.key;
-                let attackDirection;
-                switch (key) {
-                    case ƒ.KEYBOARD_CODE.ARROW_UP:
-                        attackDirection = ƒ.Vector2.Y();
-                        break;
-                    case ƒ.KEYBOARD_CODE.ARROW_RIGHT:
-                        attackDirection = ƒ.Vector2.X();
-                        break;
-                    case ƒ.KEYBOARD_CODE.ARROW_LEFT:
-                        attackDirection = ƒ.Vector2.X(-1);
-                        break;
-                    case ƒ.KEYBOARD_CODE.ARROW_DOWN:
-                        attackDirection = ƒ.Vector2.Y(-1);
-                        break;
-                    default: return;
+                if (this.isAttackAvailable) {
+                    let key = _event.key;
+                    let attackDirection;
+                    switch (key) {
+                        case ƒ.KEYBOARD_CODE.ARROW_UP:
+                            attackDirection = ƒ.Vector2.Y();
+                            break;
+                        case ƒ.KEYBOARD_CODE.ARROW_RIGHT:
+                            attackDirection = ƒ.Vector2.X();
+                            break;
+                        case ƒ.KEYBOARD_CODE.ARROW_LEFT:
+                            attackDirection = ƒ.Vector2.X(-1);
+                            break;
+                        case ƒ.KEYBOARD_CODE.ARROW_DOWN:
+                            attackDirection = ƒ.Vector2.Y(-1);
+                            break;
+                        default: return;
+                    }
+                    let projectile = new Script.Projectile(this.mtxLocal.translation, attackDirection, Script.Affinity.Flame, this.power, this.fireballTextureSrc);
+                    Script.hdlCreation(projectile, Script.projectiles);
+                    this.isAttackAvailable = false;
+                    setTimeout(() => {
+                        this.isAttackAvailable = true;
+                    }, Script.config.player.attackCooldown);
                 }
-                // console.log(this.mtxLocal.translation);
-                let projectile = new Script.Projectile(this.mtxLocal.translation, attackDirection, Script.Affinity.Flame, this.power, this.fireballTextureSrc);
-                Script.hdlCreation(projectile, Script.projectiles);
             };
             this.takeDamage = (_event) => {
                 super.takeDamage(_event);

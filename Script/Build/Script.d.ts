@@ -98,6 +98,7 @@ declare namespace Script {
          * saves the id from the last started timeout related to taking damage as well as the remaining duration
          */
         private hitTimeout;
+        private isAttackAvailable;
         private velocity;
         private lightNode;
         constructor();
