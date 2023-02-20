@@ -162,8 +162,9 @@ namespace Script {
         let dimensions: ƒ.Vector2 = ƒ.Vector2.SUM(flame.hitbox, character.hitbox);
         posDifference = new ƒ.Vector2(getAmount(posDifference.x), getAmount(posDifference.y));
         if (dimensions.x > posDifference.x && dimensions.y > posDifference.y) {
-
-          flame.takeDamage(character.power, character.mtxLocal.translation);
+          let damageEvent: Event = new CustomEvent("Damage", { bubbles: false, detail: { _sourcePower: this.power, _sourcePos: this.mtxLocal.translation } })
+          flame.dispatchEventToTargetOnly(damageEvent);
+          // flame.takeDamage(character.power, character.mtxLocal.translation);
         }
       }
     }
@@ -183,8 +184,19 @@ namespace Script {
     _creation.initializeAnimations();
     branch.appendChild(_creation);
     _array.push(_creation);
-    console.log(_creation, _array);
+    // console.log(_creation, _array);
+  }
 
+  export function hdlDestruction(_creation: Projectile | Octo, _array: any[]): void {
+    branch.removeChild(_creation);
+    for (let i = 0; i < _array.length; i++) {
+      if (_creation == _array[i]) {
+        console.log(_array);
+        _array = _array.splice(i, 1);
+        console.log(_array);
+
+      }
+    }
   }
 
   /**

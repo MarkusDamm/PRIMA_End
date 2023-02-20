@@ -30,6 +30,7 @@ namespace Script {
       this.speed = config.player.speed;
       this.health = config.player.health;
       this.power = config.player.power;
+      this.addEventListener("Damage", <EventListener><unknown>this.takeDamage);
 
       // add light
       this.lightNode = new ƒ.Node("FlameLight");
@@ -56,7 +57,7 @@ namespace Script {
           attackDirection = ƒ.Vector2.Y();
           break;
         case ƒ.KEYBOARD_CODE.ARROW_RIGHT:
-          attackDirection = ƒ.Vector2.X(1);
+          attackDirection = ƒ.Vector2.X();
           break;
         case ƒ.KEYBOARD_CODE.ARROW_LEFT:
           attackDirection = ƒ.Vector2.X(-1);
@@ -85,11 +86,11 @@ namespace Script {
 
     }
 
-    public takeDamage = (_sourcePower: number, _sourcePos: ƒ.Vector3): void => {
-      super.takeDamage(_sourcePower, _sourcePos);
+    public takeDamage = (_event: CustomEvent): void => {
+      super.takeDamage(_event);
       if (!this.hasIFrames) {
 
-        this.startIFrames(_sourcePower * 1000);
+        this.startIFrames(_event.detail._sourcePower * 1000);
       }
     }
 

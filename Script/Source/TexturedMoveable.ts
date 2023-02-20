@@ -60,8 +60,7 @@ namespace Script {
         let anim: ƒAid.SpriteSheetAnimation = new ƒAid.SpriteSheetAnimation(key, _coat);
         let fRec: ƒ.Rectangle = ƒ.Rectangle.GET(rec[0], rec[1], rec[2], rec[3]);
         anim.generateByGrid(fRec, _frames, this.resolution, _orig, _offsetNext);
-        console.log(key);
-
+        
         this.animations[key] = anim;
       }
     }

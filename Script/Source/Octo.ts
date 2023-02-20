@@ -19,6 +19,8 @@ namespace Script {
       this.health = config.enemy.health;
       this.power = config.enemy.power;
       this.hasIFrames = false;
+      // console.log("Health: ", this.health, "; Power: ", this.power, " Speed: ", this.speed);
+      this.addEventListener("Damage", <EventListener><unknown>this.takeDamage);
 
       this.mtxLocal.translate(_spawnPosition);
 
@@ -46,14 +48,20 @@ namespace Script {
 
     }
 
-    public takeDamage = (_sourcePower: number, _sourcePos: ƒ.Vector3): void => {
-      super.takeDamage(_sourcePower, _sourcePos);
-      console.log(this, "takes damage ", _sourcePower);
-      
+    public takeDamage = (_event: CustomEvent): void => {
+      // super.takeDamage(_event);
+      if (!this.hasIFrames) {
+        this.health -= _event.detail._sourcePower;
+      }
+      // console.log(this.health);
+      if (this.health <= 0) {
+        this.die();
+      }
+      // console.log(this, "takes damage ", _event.detail._sourcePos);
     }
 
     die(): void {
-      throw new Error("Method not implemented.");
+      hdlDestruction(this, characters);
     }
 
     public update(_deltaTime: number): void {

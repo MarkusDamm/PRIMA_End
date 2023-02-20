@@ -16,14 +16,13 @@ namespace Script {
      */
     constructor(_name: string, _spriteName: string, _spriteDimensions: ƒ.Vector2) {
       super(_name, _spriteName, _spriteDimensions);
-      this.addEventListener("Damage", <EventListener><unknown>this.takeDamage);
     }
 
     // protected abstract move(): void;
     abstract attack(_event?: Event | KeyboardEvent): void;
-    public takeDamage = (_sourcePower: number, _sourcePos: ƒ.Vector3): void => {
+    public takeDamage = (_event: CustomEvent): void => {
       if (!this.hasIFrames) {
-        this.health -= _sourcePower;
+        this.health -= _event.detail._sourcePower;
       }
       console.log(this.health);
       

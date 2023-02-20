@@ -43,7 +43,6 @@ var Script;
                 let anim = new ƒAid.SpriteSheetAnimation(key, _coat);
                 let fRec = ƒ.Rectangle.GET(rec[0], rec[1], rec[2], rec[3]);
                 anim.generateByGrid(fRec, _frames, this.resolution, _orig, _offsetNext);
-                console.log(key);
                 this.animations[key] = anim;
             }
         }
@@ -62,13 +61,12 @@ var Script;
             super(_name, _spriteName, _spriteDimensions);
             this.hiddenTextureSrc = "./Images/Hidden.png";
             this.hasIFrames = false;
-            this.takeDamage = (_sourcePower, _sourcePos) => {
+            this.takeDamage = (_event) => {
                 if (!this.hasIFrames) {
-                    this.health -= _sourcePower;
+                    this.health -= _event.detail._sourcePower;
                 }
                 console.log(this.health);
             };
-            this.addEventListener("Damage", this.takeDamage);
         }
     }
     Script.Character = Character;
@@ -188,7 +186,7 @@ var Script;
                         attackDirection = ƒ.Vector2.Y();
                         break;
                     case ƒ.KEYBOARD_CODE.ARROW_RIGHT:
-                        attackDirection = ƒ.Vector2.X(1);
+                        attackDirection = ƒ.Vector2.X();
                         break;
                     case ƒ.KEYBOARD_CODE.ARROW_LEFT:
                         attackDirection = ƒ.Vector2.X(-1);
@@ -202,15 +200,16 @@ var Script;
                 let projectile = new Script.Projectile(this.mtxLocal.translation, attackDirection, Script.Affinity.Flame, this.power, this.fireballTextureSrc);
                 Script.hdlCreation(projectile, Script.projectiles);
             };
-            this.takeDamage = (_sourcePower, _sourcePos) => {
-                super.takeDamage(_sourcePower, _sourcePos);
+            this.takeDamage = (_event) => {
+                super.takeDamage(_event);
                 if (!this.hasIFrames) {
-                    this.startIFrames(_sourcePower * 1000);
+                    this.startIFrames(_event.detail._sourcePower * 1000);
                 }
             };
             this.speed = Script.config.player.speed;
             this.health = Script.config.player.health;
             this.power = Script.config.player.power;
+            this.addEventListener("Damage", this.takeDamage);
             // add light
             this.lightNode = new ƒ.Node("FlameLight");
             this.lightNode.addComponent(new ƒ.ComponentTransform);
@@ -459,7 +458,9 @@ var Script;
                 let dimensions = ƒ.Vector2.SUM(Script.flame.hitbox, character.hitbox);
                 posDifference = new ƒ.Vector2(getAmount(posDifference.x), getAmount(posDifference.y));
                 if (dimensions.x > posDifference.x && dimensions.y > posDifference.y) {
-                    Script.flame.takeDamage(character.power, character.mtxLocal.translation);
+                    let damageEvent = new CustomEvent("Damage", { bubbles: false, detail: { _sourcePower: this.power, _sourcePos: this.mtxLocal.translation } });
+                    Script.flame.dispatchEventToTargetOnly(damageEvent);
+                    // flame.takeDamage(character.power, character.mtxLocal.translation);
                 }
             }
         }
@@ -477,9 +478,20 @@ var Script;
         _creation.initializeAnimations();
         branch.appendChild(_creation);
         _array.push(_creation);
-        console.log(_creation, _array);
+        // console.log(_creation, _array);
     }
     Script.hdlCreation = hdlCreation;
+    function hdlDestruction(_creation, _array) {
+        branch.removeChild(_creation);
+        for (let i = 0; i < _array.length; i++) {
+            if (_creation == _array[i]) {
+                console.log(_array);
+                _array = _array.splice(i, 1);
+                console.log(_array);
+            }
+        }
+    }
+    Script.hdlDestruction = hdlDestruction;
     /**
      * set up the floor-tiles with a given texture for the whole stage
      */
@@ -531,9 +543,16 @@ var Script;
             this.affinity = Script.Affinity.Enemy;
             this.hasIFrames = false;
             this.health = 10;
-            this.takeDamage = (_sourcePower, _sourcePos) => {
-                super.takeDamage(_sourcePower, _sourcePos);
-                console.log(this, "takes damage ", _sourcePower);
+            this.takeDamage = (_event) => {
+                // super.takeDamage(_event);
+                if (!this.hasIFrames) {
+                    this.health -= _event.detail._sourcePower;
+                }
+                // console.log(this.health);
+                if (this.health <= 0) {
+                    this.die();
+                }
+                // console.log(this, "takes damage ", _event.detail._sourcePos);
             };
             this.unveil = () => {
                 this.spriteNode.setAnimation(this.animations.idle);
@@ -542,6 +561,8 @@ var Script;
             this.health = Script.config.enemy.health;
             this.power = Script.config.enemy.power;
             this.hasIFrames = false;
+            // console.log("Health: ", this.health, "; Power: ", this.power, " Speed: ", this.speed);
+            this.addEventListener("Damage", this.takeDamage);
             this.mtxLocal.translate(_spawnPosition);
             this.targetUpdateTimeout = { timeoutID: 0, duration: 0 };
             this.updateTarget();
@@ -562,7 +583,7 @@ var Script;
         attack() {
         }
         die() {
-            throw new Error("Method not implemented.");
+            Script.hdlDestruction(this, Script.characters);
         }
         update(_deltaTime) {
             this.move(_deltaTime);
@@ -586,10 +607,12 @@ var Script;
             super("Projectile", "ProjectileSprite", Projectile.spriteDimensions);
             this.textureSrc = "./Images/Fireball16x16.png";
             this.animations = {};
+            this.speed = 3;
             this.mtxLocal.translate(_position);
             _direction.normalize(this.speed);
-            // _direction.scale(this.speed);
+            _direction.scale(this.speed);
             this.velocity = _direction.toVector3();
+            this.adjustSprite(_direction);
             this.affinity = _affinity;
             this.textureSrc = _spriteSource;
             this.power = _power;
@@ -602,15 +625,32 @@ var Script;
             lightNode.mtxLocal.scale(ƒ.Vector3.ONE(5));
             this.appendChild(lightNode);
         }
+        adjustSprite(_direction) {
+            _direction.normalize();
+            if (_direction.x == -1) // Left
+                this.spriteNode.mtxLocal.rotateZ(180);
+            if (_direction.y == 1) // Up
+                this.spriteNode.mtxLocal.rotateZ(90);
+            else if (_direction.y == -1) // Down
+                this.spriteNode.mtxLocal.rotateZ(270);
+        }
         update(_deltaTime) {
-            this.move(_deltaTime);
-            this.checkForCollision();
+            if (this.state != Script.State.Die) {
+                this.move(_deltaTime);
+                this.checkForCollision();
+            }
         }
         move(_deltaTime) {
             let distance = new ƒ.Vector3(this.velocity.x, this.velocity.y);
             // distance.normalize(this.speed);
             distance.scale(_deltaTime);
             this.mtxLocal.translate(distance);
+            let pos = this.mtxLocal.translation;
+            if (pos.x > Script.config.stage.dimensionX / 2 || pos.x < -Script.config.stage.dimensionX / 2 ||
+                pos.y > Script.config.stage.dimensionY / 2 || pos.y < -Script.config.stage.dimensionY / 2) {
+                this.state = Script.State.Die;
+                Script.hdlDestruction(this, Script.projectiles);
+            }
         }
         checkForCollision() {
             for (const character of Script.characters) {
@@ -624,6 +664,12 @@ var Script;
                             // character.takeDamage(character.power, character.mtxLocal.translation);
                             let damageEvent = new CustomEvent("Damage", { bubbles: true, detail: { _sourcePower: this.power, _sourcePos: this.mtxLocal.translation } });
                             character.dispatchEvent(damageEvent);
+                            // play explosion
+                            this.state = Script.State.Die;
+                            // then destroy projectile
+                            setTimeout(() => {
+                                Script.hdlDestruction(this, Script.projectiles);
+                            }, 1000);
                         }
                     }
                 }
@@ -633,6 +679,7 @@ var Script;
             let rectangles = { "idle": [0, 0, 16, 16] };
             await super.initializeAnimations(this.textureSrc, rectangles, 1, this.resolution);
             this.spriteNode.setAnimation(this.animations.idle);
+            this.state = Script.State.Idle;
         }
     }
     Projectile.spriteDimensions = new ƒ.Vector2(16, 16);

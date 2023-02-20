@@ -44,7 +44,7 @@ declare namespace Script {
          */
         constructor(_name: string, _spriteName: string, _spriteDimensions: ƒ.Vector2);
         abstract attack(_event?: Event | KeyboardEvent): void;
-        takeDamage: (_sourcePower: number, _sourcePos: ƒ.Vector3) => void;
+        takeDamage: (_event: CustomEvent) => void;
         abstract die(): void;
         abstract unveil(): void;
     }
@@ -89,7 +89,6 @@ declare namespace Script {
         timeoutID: number;
         duration: number;
     }
-    import ƒ = FudgeCore;
     class Flame extends Character {
         protected textureSrc: string;
         protected animations: ƒAid.SpriteSheetAnimations;
@@ -106,7 +105,7 @@ declare namespace Script {
         attack: (_event: KeyboardEvent) => void;
         protected move(): void;
         die(): void;
-        takeDamage: (_sourcePower: number, _sourcePos: ƒ.Vector3) => void;
+        takeDamage: (_event: CustomEvent) => void;
         private startIFrames;
         update(): void;
         initializeAnimations(): Promise<void>;
@@ -137,6 +136,7 @@ declare namespace Script {
     let projectiles: Projectile[];
     let config: any;
     function hdlCreation(_creation: Projectile | Octo, _array: any[]): void;
+    function hdlDestruction(_creation: Projectile | Octo, _array: any[]): void;
     /**
      * get the amount (Betrag) of a number
      */
@@ -156,7 +156,7 @@ declare namespace Script {
         protected move(_deltaTime: number): void;
         private updateTarget;
         attack(): void;
-        takeDamage: (_sourcePower: number, _sourcePos: ƒ.Vector3) => void;
+        takeDamage: (_event: CustomEvent) => void;
         die(): void;
         update(_deltaTime: number): void;
         initializeAnimations(): Promise<void>;
@@ -171,9 +171,12 @@ declare namespace Script {
         static spriteDimensions: ƒ.Vector2;
         protected animations: ƒAid.SpriteSheetAnimations;
         velocity: ƒ.Vector3;
+        protected speed: number;
         affinity: Affinity;
         power: number;
+        state: State;
         constructor(_position: ƒ.Vector3, _direction: ƒ.Vector2, _affinity: Affinity, _power: number, _spriteSource: string);
+        private adjustSprite;
         update(_deltaTime: number): void;
         protected move(_deltaTime: number): void;
         private checkForCollision;
