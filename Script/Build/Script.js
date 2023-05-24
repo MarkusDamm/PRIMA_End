@@ -517,7 +517,7 @@ var Script;
                 floorTile.addComponent(cmpMesh);
                 // add textured Material
                 let coat = new ƒ.CoatRemissiveTextured(ƒ.Color.CSS("white"), _texture);
-                let mat = new ƒ.Material("TileMaterial", ƒ.ShaderFlatTextured, coat);
+                let mat = new ƒ.Material("TileMaterial", ƒ.ShaderPhongTextured, coat);
                 let cmpMat = new ƒ.ComponentMaterial(mat);
                 floorTile.addComponent(cmpMat);
                 // append tile to parent
