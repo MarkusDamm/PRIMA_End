@@ -216,12 +216,12 @@ namespace Script {
     // add textured Material
     let coat: ƒ.CoatTextured = new ƒ.CoatTextured(ƒ.Color.CSS("white"), _texture);
     let mat: ƒ.Material = new ƒ.Material("TileMaterial", ƒ.ShaderPhongTextured, coat);
+    // error with material
     let cmpMat: ƒ.ComponentMaterial = new ƒ.ComponentMaterial(mat);
     floorTile.addComponent(cmpMat);
     // append tile to parent
     branch.appendChild(floorTile);
 
-    
     // append multiple tiles
     // let floorTiles: ƒ.Node = new ƒ.Node("FloorTiles");
     // for (let x: number = -(stageDimension.x / 2); x < stageDimension.y / 2; x += 2) {
