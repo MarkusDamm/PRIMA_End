@@ -38,12 +38,14 @@ namespace Script {
       startInteractiveViewport(graphId);
     });
     dialog.showModal();
+    prepareUI();
   }
 
   async function startInteractiveViewport(_graphId: string): Promise<void> {
     // load resources referenced in the link-tag
     await ƒ.Project.loadResourcesFromHTML();
     ƒ.Debug.log("Project:", ƒ.Project.resources);
+    prepareUI();
 
     config = await (await fetch("./config.json")).json();
     console.log(config.control);
@@ -163,7 +165,7 @@ namespace Script {
         let dimensions: ƒ.Vector2 = ƒ.Vector2.SUM(flame.hitbox, character.hitbox);
         posDifference = new ƒ.Vector2(getAmount(posDifference.x), getAmount(posDifference.y));
         if (dimensions.x > posDifference.x && dimensions.y > posDifference.y) {
-          let damageEvent: Event = new CustomEvent("Damage", { bubbles: false, detail: { _sourcePower: this.power, _sourcePos: this.mtxLocal.translation } })
+          let damageEvent: Event = new CustomEvent("Damage", { bubbles: false, detail: { _sourcePower: character.power, _sourcePos: character.mtxLocal.translation } })
           flame.dispatchEventToTargetOnly(damageEvent);
           // flame.takeDamage(character.power, character.mtxLocal.translation);
         }
@@ -173,7 +175,7 @@ namespace Script {
 
   function stopLoop(_event: KeyboardEvent): void {
     if (_event.key == "p") {
-      console.log("P pressed");
+      console.log("P pressed for pause, press o to continue");
       ƒ.Loop.stop();
     }
     if (_event.key == "o") {
@@ -236,6 +238,12 @@ namespace Script {
     }
     else
       return _number;
+  }
+
+  function prepareUI(): void {
+    let healthUI: HTMLInputElement = document.querySelector('input [type="range"]');
+    console.log(healthUI);
+    
   }
 
 }

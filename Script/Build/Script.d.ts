@@ -44,9 +44,9 @@ declare namespace Script {
          */
         constructor(_name: string, _spriteName: string, _spriteDimensions: ƒ.Vector2);
         abstract attack(_event?: Event | KeyboardEvent): void;
-        takeDamage: (_event: CustomEvent) => void;
         abstract die(): void;
         abstract unveil(): void;
+        takeDamage: (_event: CustomEvent) => void;
     }
 }
 declare namespace Script {

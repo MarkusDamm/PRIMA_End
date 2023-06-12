@@ -20,16 +20,14 @@ namespace Script {
 
     // protected abstract move(): void;
     abstract attack(_event?: Event | KeyboardEvent): void;
+    abstract die(): void;
+    abstract unveil(): void;
+
     public takeDamage = (_event: CustomEvent): void => {
       if (!this.hasIFrames) {
         this.health -= _event.detail._sourcePower;
       }
       console.log(this.health);
-      
     }
-    abstract die(): void;
-    abstract unveil(): void;
-
   }
-
 }

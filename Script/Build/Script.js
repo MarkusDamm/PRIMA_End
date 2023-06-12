@@ -208,6 +208,7 @@ var Script;
             };
             this.takeDamage = (_event) => {
                 super.takeDamage(_event);
+                console.log("Flame takes damage");
                 if (!this.hasIFrames) {
                     this.startIFrames(_event.detail._sourcePower * 1000);
                 }
@@ -361,11 +362,13 @@ var Script;
             startInteractiveViewport(graphId);
         });
         dialog.showModal();
+        prepareUI();
     }
     async function startInteractiveViewport(_graphId) {
         // load resources referenced in the link-tag
         await ƒ.Project.loadResourcesFromHTML();
         ƒ.Debug.log("Project:", ƒ.Project.resources);
+        prepareUI();
         Script.config = await (await fetch("./config.json")).json();
         console.log(Script.config.control);
         stageDimension = new ƒ.Vector2(Script.config.stage.dimensionX, Script.config.stage.dimensionY);
@@ -465,7 +468,7 @@ var Script;
                 let dimensions = ƒ.Vector2.SUM(Script.flame.hitbox, character.hitbox);
                 posDifference = new ƒ.Vector2(getAmount(posDifference.x), getAmount(posDifference.y));
                 if (dimensions.x > posDifference.x && dimensions.y > posDifference.y) {
-                    let damageEvent = new CustomEvent("Damage", { bubbles: false, detail: { _sourcePower: this.power, _sourcePos: this.mtxLocal.translation } });
+                    let damageEvent = new CustomEvent("Damage", { bubbles: false, detail: { _sourcePower: character.power, _sourcePos: character.mtxLocal.translation } });
                     Script.flame.dispatchEventToTargetOnly(damageEvent);
                     // flame.takeDamage(character.power, character.mtxLocal.translation);
                 }
@@ -474,7 +477,7 @@ var Script;
     }
     function stopLoop(_event) {
         if (_event.key == "p") {
-            console.log("P pressed");
+            console.log("P pressed for pause, press o to continue");
             ƒ.Loop.stop();
         }
         if (_event.key == "o") {
@@ -534,6 +537,10 @@ var Script;
             return _number;
     }
     Script.getAmount = getAmount;
+    function prepareUI() {
+        let healthUI = document.querySelector('input [type="range"]');
+        console.log(healthUI);
+    }
 })(Script || (Script = {}));
 var Script;
 (function (Script) {

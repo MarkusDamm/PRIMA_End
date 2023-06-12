@@ -95,6 +95,8 @@ namespace Script {
 
     public takeDamage = (_event: CustomEvent): void => {
       super.takeDamage(_event);
+      console.log("Flame takes damage");
+      
       if (!this.hasIFrames) {
 
         this.startIFrames(_event.detail._sourcePower * 1000);
