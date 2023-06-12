@@ -502,30 +502,24 @@ var Script;
      * set up the floor-tiles with a given texture for the whole stage
      */
     function setUpFloor(_texture) {
-        let floorTiles = new ƒ.Node("FloorTiles");
-        for (let x = -(stageDimension.x / 2); x < stageDimension.y / 2; x += 2) {
-            for (let y = -(stageDimension.y / 2); y < stageDimension.y / 2; y += 2) {
-                let floorTile = new ƒ.Node("Tile");
-                floorTile.addComponent(new ƒ.ComponentTransform);
-                floorTile.mtxLocal.translateX(x);
-                floorTile.mtxLocal.translateY(y);
-                floorTile.mtxLocal.translateZ(-1);
-                floorTile.mtxLocal.scaleX(2);
-                floorTile.mtxLocal.scaleY(2);
-                // add SpriteMesh
-                let cmpMesh = new ƒ.ComponentMesh(new ƒ.MeshSprite("TileSprite"));
-                floorTile.addComponent(cmpMesh);
-                // add textured Material
-                let coat = new ƒ.CoatRemissiveTextured(ƒ.Color.CSS("white"), _texture);
-                let mat = new ƒ.Material("TileMaterial", ƒ.ShaderPhongTextured, coat);
-                let cmpMat = new ƒ.ComponentMaterial(mat);
-                floorTile.addComponent(cmpMat);
-                // append tile to parent
-                floorTiles.appendChild(floorTile);
-            }
-        }
-        // append all tiles to branch
-        branch.appendChild(floorTiles);
+        // append one tile with phong shader
+        let floorTile = new ƒ.Node("Tile");
+        floorTile.addComponent(new ƒ.ComponentTransform);
+        floorTile.mtxLocal.translateZ(-1);
+        floorTile.mtxLocal.scaleX(stageDimension.x);
+        floorTile.mtxLocal.scaleY(stageDimension.y);
+        // add SpriteMesh
+        let cmpMesh = new ƒ.ComponentMesh(new ƒ.MeshSprite("TileSprite"));
+        floorTile.addComponent(cmpMesh);
+        // add textured Material
+        let coat = new ƒ.CoatRemissiveTextured(ƒ.Color.CSS("white"), _texture);
+        let mat = new ƒ.Material("TileMaterial", ƒ.ShaderPhongTextured, coat);
+        let cmpMat = new ƒ.ComponentMaterial(mat);
+        cmpMat.mtxPivot.scaleX(stageDimension.x / 2);
+        cmpMat.mtxPivot.scaleY(stageDimension.y / 2);
+        floorTile.addComponent(cmpMat);
+        // append tile to parent
+        branch.appendChild(floorTile);
     }
     /**
      * get the amount (Betrag) of a number

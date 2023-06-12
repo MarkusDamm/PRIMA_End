@@ -16,7 +16,7 @@
   },
   "stage": {
     "floorTextureSource": "./Images/Floor-TileBorderless24x24.png",
-    "dimensionX": 50,
-    "dimensionY": 50
+    "dimensionX": 150,
+    "dimensionY": 150
   }
 }
