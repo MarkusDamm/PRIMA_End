@@ -408,7 +408,8 @@ var Script;
         branch.appendChild(Script.flame);
         // characters.push(flame);
         document.addEventListener("keydown", Script.flame.attack);
-        addEnemy(10);
+        //can be put in Config
+        addEnemy(100);
         ƒ.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, update);
         ƒ.Loop.start(); // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
     }
@@ -514,6 +515,7 @@ var Script;
         // add textured Material
         let coat = new ƒ.CoatRemissiveTextured(ƒ.Color.CSS("white"), _texture);
         let mat = new ƒ.Material("TileMaterial", ƒ.ShaderPhongTextured, coat);
+        // error with material
         let cmpMat = new ƒ.ComponentMaterial(mat);
         cmpMat.mtxPivot.scaleX(stageDimension.x / 2);
         cmpMat.mtxPivot.scaleY(stageDimension.y / 2);

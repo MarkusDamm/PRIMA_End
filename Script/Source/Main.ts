@@ -98,7 +98,8 @@ namespace Script {
 
     document.addEventListener("keydown", flame.attack);
 
-    addEnemy(10);
+    //can be put in Config
+    addEnemy(100);
 
     ƒ.Loop.addEventListener(ƒ.EVENT.LOOP_FRAME, update);
 
