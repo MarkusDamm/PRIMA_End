@@ -216,6 +216,7 @@ namespace Script {
     // add textured Material
     let coat: ƒ.CoatRemissiveTextured = new ƒ.CoatRemissiveTextured(ƒ.Color.CSS("white"), _texture);
     let mat: ƒ.Material = new ƒ.Material("TileMaterial", ƒ.ShaderPhongTextured, coat);
+    // error with material
     let cmpMat: ƒ.ComponentMaterial = new ƒ.ComponentMaterial(mat);
     cmpMat.mtxPivot.scaleX(stageDimension.x / 2);
     cmpMat.mtxPivot.scaleY(stageDimension.y / 2);

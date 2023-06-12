@@ -277,7 +277,7 @@ declare namespace FudgeAid {
         /** Find the instructions dedicated for the current state or create an empty set for it */
         private getStateMethods;
     }
-    export {};
+    export { };
 }
 declare namespace FudgeAid {
     class Viewport {
