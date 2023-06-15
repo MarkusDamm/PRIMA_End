@@ -20,7 +20,7 @@ namespace Script {
       this.power = config.enemy.power;
       this.hasIFrames = false;
       // console.log("Health: ", this.health, "; Power: ", this.power, " Speed: ", this.speed);
-      this.addEventListener("Damage", <EventListener><unknown>this.takeDamage);
+      this.addEventListener("Damage", this.takeDamage.bind(this));
 
       this.mtxLocal.translate(_spawnPosition);
 
@@ -48,12 +48,9 @@ namespace Script {
 
     }
 
-    public takeDamage = (_event: CustomEvent): void => {
-      // super.takeDamage(_event);
-      if (!this.hasIFrames) {
-        this.health -= _event.detail._sourcePower;
-      }
-      // console.log(this.health);
+    public takeDamage (_event: CustomEvent): void {
+      super.takeDamage(_event);
+
       if (this.health <= 0) {
         this.die();
       }

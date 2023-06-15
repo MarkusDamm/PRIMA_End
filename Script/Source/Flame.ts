@@ -1,5 +1,6 @@
 ///<reference path="./Character.ts"/>
 namespace Script {
+  import ƒ = FudgeCore;
   import ƒAid = FudgeAid;
 
   enum Frames {
@@ -8,7 +9,6 @@ namespace Script {
 
   export interface Timeout { timeoutID: number, duration: number };
 
-  import ƒ = FudgeCore;
   export class Flame extends Character {
     protected textureSrc: string = "./Images/H-Sheet32x32.png";
     protected animations: ƒAid.SpriteSheetAnimations = {};
@@ -30,7 +30,9 @@ namespace Script {
       this.speed = config.player.speed;
       this.health = config.player.health;
       this.power = config.player.power;
-      this.addEventListener("Damage", <EventListener><unknown>this.takeDamage);
+      console.log("Health: " + this.health);
+
+      this.addEventListener("Damage", this.takeDamage.bind(this));
 
       // add light
       this.lightNode = new ƒ.Node("FlameLight");
@@ -93,7 +95,7 @@ namespace Script {
 
     }
 
-    public takeDamage = (_event: CustomEvent): void => {
+    public takeDamage(_event: CustomEvent): void {
       super.takeDamage(_event);
       console.log("Flame takes damage");
       

@@ -241,7 +241,7 @@ namespace Script {
   }
 
   function prepareUI(): void {
-    let healthUI: HTMLInputElement = document.querySelector('input [type="range"]');
+    let healthUI: HTMLInputElement = document.querySelector('input[key="health"]');
     console.log(healthUI);
     
   }

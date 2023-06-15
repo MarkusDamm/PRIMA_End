@@ -61,12 +61,12 @@ var Script;
             super(_name, _spriteName, _spriteDimensions);
             this.hiddenTextureSrc = "./Images/Hidden.png";
             this.hasIFrames = false;
-            this.takeDamage = (_event) => {
-                if (!this.hasIFrames) {
-                    this.health -= _event.detail._sourcePower;
-                }
-                console.log(this.health);
-            };
+        }
+        takeDamage(_event) {
+            if (!this.hasIFrames) {
+                this.health -= _event.detail._sourcePower;
+            }
+            console.log(this.health);
         }
     }
     Script.Character = Character;
@@ -158,6 +158,7 @@ var Script;
 var Script;
 ///<reference path="./Character.ts"/>
 (function (Script) {
+    var ƒ = FudgeCore;
     let Frames;
     (function (Frames) {
         Frames[Frames["RightIdle"] = 0] = "RightIdle";
@@ -169,7 +170,6 @@ var Script;
     })(Frames || (Frames = {}));
     ;
     ;
-    var ƒ = FudgeCore;
     class Flame extends Script.Character {
         constructor() {
             super("Flame", "FlameSprite", new ƒ.Vector2(32, 32));
@@ -206,17 +206,11 @@ var Script;
                     }, Script.config.player.attackCooldown);
                 }
             };
-            this.takeDamage = (_event) => {
-                super.takeDamage(_event);
-                console.log("Flame takes damage");
-                if (!this.hasIFrames) {
-                    this.startIFrames(_event.detail._sourcePower * 1000);
-                }
-            };
             this.speed = Script.config.player.speed;
             this.health = Script.config.player.health;
             this.power = Script.config.player.power;
-            this.addEventListener("Damage", this.takeDamage);
+            console.log("Health: " + this.health);
+            this.addEventListener("Damage", this.takeDamage.bind(this));
             // add light
             this.lightNode = new ƒ.Node("FlameLight");
             this.lightNode.addComponent(new ƒ.ComponentTransform);
@@ -239,6 +233,13 @@ var Script;
             this.mtxLocal.translate(this.velocity.toVector3());
         }
         die() {
+        }
+        takeDamage(_event) {
+            super.takeDamage(_event);
+            console.log("Flame takes damage");
+            if (!this.hasIFrames) {
+                this.startIFrames(_event.detail._sourcePower * 1000);
+            }
         }
         startIFrames(_timeoutDuration) {
             this.hasIFrames = true;
@@ -538,7 +539,7 @@ var Script;
     }
     Script.getAmount = getAmount;
     function prepareUI() {
-        let healthUI = document.querySelector('input [type="range"]');
+        let healthUI = document.querySelector('input[key="health"]');
         console.log(healthUI);
     }
 })(Script || (Script = {}));
@@ -552,17 +553,6 @@ var Script;
             this.affinity = Script.Affinity.Enemy;
             this.hasIFrames = false;
             this.health = 10;
-            this.takeDamage = (_event) => {
-                // super.takeDamage(_event);
-                if (!this.hasIFrames) {
-                    this.health -= _event.detail._sourcePower;
-                }
-                // console.log(this.health);
-                if (this.health <= 0) {
-                    this.die();
-                }
-                // console.log(this, "takes damage ", _event.detail._sourcePos);
-            };
             this.unveil = () => {
                 this.spriteNode.setAnimation(this.animations.idle);
             };
@@ -571,7 +561,7 @@ var Script;
             this.power = Script.config.enemy.power;
             this.hasIFrames = false;
             // console.log("Health: ", this.health, "; Power: ", this.power, " Speed: ", this.speed);
-            this.addEventListener("Damage", this.takeDamage);
+            this.addEventListener("Damage", this.takeDamage.bind(this));
             this.mtxLocal.translate(_spawnPosition);
             this.targetUpdateTimeout = { timeoutID: 0, duration: 0 };
             this.updateTarget();
@@ -590,6 +580,13 @@ var Script;
             }, 2500);
         }
         attack() {
+        }
+        takeDamage(_event) {
+            super.takeDamage(_event);
+            if (this.health <= 0) {
+                this.die();
+            }
+            // console.log(this, "takes damage ", _event.detail._sourcePos);
         }
         die() {
             Script.hdlDestruction(this, Script.characters);

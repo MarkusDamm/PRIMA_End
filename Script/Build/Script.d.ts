@@ -46,7 +46,7 @@ declare namespace Script {
         abstract attack(_event?: Event | KeyboardEvent): void;
         abstract die(): void;
         abstract unveil(): void;
-        takeDamage: (_event: CustomEvent) => void;
+        takeDamage(_event: CustomEvent): void;
     }
 }
 declare namespace Script {
@@ -106,7 +106,7 @@ declare namespace Script {
         attack: (_event: KeyboardEvent) => void;
         protected move(): void;
         die(): void;
-        takeDamage: (_event: CustomEvent) => void;
+        takeDamage(_event: CustomEvent): void;
         private startIFrames;
         update(): void;
         initializeAnimations(): Promise<void>;
@@ -157,7 +157,7 @@ declare namespace Script {
         protected move(_deltaTime: number): void;
         private updateTarget;
         attack(): void;
-        takeDamage: (_event: CustomEvent) => void;
+        takeDamage(_event: CustomEvent): void;
         die(): void;
         update(_deltaTime: number): void;
         initializeAnimations(): Promise<void>;
