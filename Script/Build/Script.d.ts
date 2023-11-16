@@ -92,7 +92,7 @@ declare namespace Script {
     class Flame extends Character {
         protected textureSrc: string;
         protected animations: ƒAid.SpriteSheetAnimations;
-        fireballTextureSrc: string;
+        private fireballTextureSrc;
         readonly affinity = Affinity.Flame;
         /**
          * saves the id from the last started timeout related to taking damage as well as the remaining duration
@@ -100,6 +100,7 @@ declare namespace Script {
         private hitTimeout;
         private isAttackAvailable;
         private velocity;
+        private gui;
         private lightNode;
         constructor();
         get getSpeed(): number;
@@ -120,6 +121,18 @@ declare namespace Script {
 }
 declare namespace Script {
     import ƒ = FudgeCore;
+    class GUI extends ƒ.Mutable {
+        health: number;
+        constructor(_health: number);
+        protected reduceMutator(_mutator: ƒ.Mutator): void;
+        /**
+         * updateUI
+         */
+        updateUI(): void;
+    }
+}
+declare namespace Script {
+    import ƒ = FudgeCore;
     enum Affinity {
         Flame = 0,
         Enemy = 1
@@ -131,6 +144,7 @@ declare namespace Script {
         Die = 3,
         Hurt = 4
     }
+    let audioManager: ƒ.AudioManager;
     let camNode: ƒ.Node;
     let flame: Flame;
     let characters: Character[];
@@ -168,14 +182,16 @@ declare namespace Script {
 }
 declare namespace Script {
     class Projectile extends TexturedMoveable {
-        textureSrc: string;
+        protected textureSrc: string;
+        private soundSrc;
+        private cmpAudio;
         static spriteDimensions: ƒ.Vector2;
         protected animations: ƒAid.SpriteSheetAnimations;
-        velocity: ƒ.Vector3;
+        private velocity;
         protected speed: number;
-        affinity: Affinity;
-        power: number;
-        state: State;
+        private affinity;
+        private power;
+        private state;
         constructor(_position: ƒ.Vector3, _direction: ƒ.Vector2, _affinity: Affinity, _power: number, _spriteSource: string);
         private adjustSprite;
         update(_deltaTime: number): void;

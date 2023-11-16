@@ -210,6 +210,7 @@ var Script;
             this.health = Script.config.player.health;
             this.power = Script.config.player.power;
             console.log("Health: " + this.health);
+            this.gui = new Script.GUI(this.health);
             this.addEventListener("Damage", this.takeDamage.bind(this));
             // add light
             this.lightNode = new ƒ.Node("FlameLight");
@@ -236,6 +237,7 @@ var Script;
         }
         takeDamage(_event) {
             super.takeDamage(_event);
+            this.gui.health = this.health;
             console.log("Flame takes damage");
             if (!this.hasIFrames) {
                 this.startIFrames(_event.detail._sourcePower * 1000);
@@ -326,6 +328,27 @@ var Script;
 var Script;
 (function (Script) {
     var ƒ = FudgeCore;
+    var ƒUI = FudgeUserInterface;
+    class GUI extends ƒ.Mutable {
+        constructor(_health) {
+            super();
+            this.health = _health;
+            let healthUI = document.querySelector("div#vui");
+            console.log("connect health");
+            new ƒUI.Controller(this, healthUI);
+        }
+        reduceMutator(_mutator) { }
+        /**
+         * updateUI
+         */
+        updateUI() {
+        }
+    }
+    Script.GUI = GUI;
+})(Script || (Script = {}));
+var Script;
+(function (Script) {
+    var ƒ = FudgeCore;
     ƒ.Debug.info("Main Program Template running!");
     let Affinity;
     (function (Affinity) {
@@ -363,13 +386,11 @@ var Script;
             startInteractiveViewport(graphId);
         });
         dialog.showModal();
-        prepareUI();
     }
     async function startInteractiveViewport(_graphId) {
         // load resources referenced in the link-tag
         await ƒ.Project.loadResourcesFromHTML();
         ƒ.Debug.log("Project:", ƒ.Project.resources);
-        prepareUI();
         Script.config = await (await fetch("./config.json")).json();
         console.log(Script.config.control);
         stageDimension = new ƒ.Vector2(Script.config.stage.dimensionX, Script.config.stage.dimensionY);
@@ -381,10 +402,17 @@ var Script;
             alert("Nothing to render. Create a graph with at least a mesh, material and probably some light");
             return;
         }
+        Script.audioManager = new ƒ.AudioManager();
+        Script.audioManager.volume = 10;
         // setup the viewport
         let cmpCamera = new ƒ.ComponentCamera();
         Script.camNode = new ƒ.Node("Camera");
         Script.camNode.addComponent(cmpCamera);
+        let cmpAudioListener = new ƒ.ComponentAudioListener();
+        cmpAudioListener.activate(true);
+        Script.camNode.addComponent(cmpAudioListener);
+        Script.audioManager.listenWith(cmpAudioListener);
+        Script.audioManager.listenTo(branch);
         Script.camNode.addComponent(new ƒ.ComponentTransform());
         Script.camNode.mtxLocal.translateZ(30);
         Script.camNode.mtxLocal.rotateY(180, false);
@@ -415,6 +443,7 @@ var Script;
         //can be put in Config
         addEnemy(100);
         ƒ.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, update);
+        Script.audioManager.resume();
         ƒ.Loop.start(); // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
     }
     function addEnemy(_amount) {
@@ -471,7 +500,6 @@ var Script;
                 if (dimensions.x > posDifference.x && dimensions.y > posDifference.y) {
                     let damageEvent = new CustomEvent("Damage", { bubbles: false, detail: { _sourcePower: character.power, _sourcePos: character.mtxLocal.translation } });
                     Script.flame.dispatchEventToTargetOnly(damageEvent);
-                    // flame.takeDamage(character.power, character.mtxLocal.translation);
                 }
             }
         }
@@ -489,7 +517,6 @@ var Script;
         _creation.initializeAnimations();
         branch.appendChild(_creation);
         _array.push(_creation);
-        // console.log(_creation, _array);
     }
     Script.hdlCreation = hdlCreation;
     function hdlDestruction(_creation, _array) {
@@ -538,10 +565,6 @@ var Script;
             return _number;
     }
     Script.getAmount = getAmount;
-    function prepareUI() {
-        let healthUI = document.querySelector('input[key="health"]');
-        console.log(healthUI);
-    }
 })(Script || (Script = {}));
 var Script;
 (function (Script) {
@@ -612,6 +635,7 @@ var Script;
         constructor(_position, _direction, _affinity, _power, _spriteSource) {
             super("Projectile", "ProjectileSprite", Projectile.spriteDimensions);
             this.textureSrc = "./Images/Fireball16x16.png";
+            this.soundSrc = "./Sounds/explosion.wav";
             this.animations = {};
             this.speed = 3;
             this.mtxLocal.translate(_position);
@@ -622,6 +646,9 @@ var Script;
             this.affinity = _affinity;
             this.textureSrc = _spriteSource;
             this.power = _power;
+            let explosionAudio = new ƒ.Audio(this.soundSrc);
+            this.cmpAudio = new ƒ.ComponentAudio(explosionAudio, false, false, Script.audioManager);
+            this.cmpAudio.volume += 50;
             // add light
             let lightNode = new ƒ.Node("FlameLight");
             lightNode.addComponent(new ƒ.ComponentTransform);
@@ -671,6 +698,7 @@ var Script;
                             let damageEvent = new CustomEvent("Damage", { bubbles: true, detail: { _sourcePower: this.power, _sourcePos: this.mtxLocal.translation } });
                             character.dispatchEvent(damageEvent);
                             // play explosion
+                            this.cmpAudio.play(true);
                             this.state = Script.State.Die;
                             // then destroy projectile
                             setTimeout(() => {

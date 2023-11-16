@@ -16,6 +16,7 @@ namespace Script {
   // global variables
   let viewport: ƒ.Viewport;
   let branch: ƒ.Node;
+  export let audioManager: ƒ.AudioManager;
   export let camNode: ƒ.Node;
   export let flame: Flame;
   export let characters: Character[] = [];
@@ -38,14 +39,12 @@ namespace Script {
       startInteractiveViewport(graphId);
     });
     dialog.showModal();
-    prepareUI();
   }
 
   async function startInteractiveViewport(_graphId: string): Promise<void> {
     // load resources referenced in the link-tag
     await ƒ.Project.loadResourcesFromHTML();
     ƒ.Debug.log("Project:", ƒ.Project.resources);
-    prepareUI();
 
     config = await (await fetch("./config.json")).json();
     console.log(config.control);
@@ -60,10 +59,18 @@ namespace Script {
       return;
     }
 
+    audioManager = new ƒ.AudioManager();
+    audioManager.volume = 10;
+    
     // setup the viewport
     let cmpCamera: ƒ.ComponentCamera = new ƒ.ComponentCamera();
     camNode = new ƒ.Node("Camera");
     camNode.addComponent(cmpCamera);
+    let cmpAudioListener = new ƒ.ComponentAudioListener();
+    cmpAudioListener.activate(true);
+    camNode.addComponent(cmpAudioListener);
+    audioManager.listenWith(cmpAudioListener);
+    audioManager.listenTo(branch);
     camNode.addComponent(new ƒ.ComponentTransform());
     camNode.mtxLocal.translateZ(30);
     camNode.mtxLocal.rotateY(180, false);
@@ -104,6 +111,7 @@ namespace Script {
     addEnemy(100);
 
     ƒ.Loop.addEventListener(ƒ.EVENT.LOOP_FRAME, update);
+    audioManager.resume();
 
     ƒ.Loop.start();  // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
   }
@@ -165,9 +173,8 @@ namespace Script {
         let dimensions: ƒ.Vector2 = ƒ.Vector2.SUM(flame.hitbox, character.hitbox);
         posDifference = new ƒ.Vector2(getAmount(posDifference.x), getAmount(posDifference.y));
         if (dimensions.x > posDifference.x && dimensions.y > posDifference.y) {
-          let damageEvent: Event = new CustomEvent("Damage", { bubbles: false, detail: { _sourcePower: character.power, _sourcePos: character.mtxLocal.translation } })
+          let damageEvent: Event = new CustomEvent("Damage", { bubbles: false, detail: { _sourcePower: character.power, _sourcePos: character.mtxLocal.translation } });
           flame.dispatchEventToTargetOnly(damageEvent);
-          // flame.takeDamage(character.power, character.mtxLocal.translation);
         }
       }
     }
@@ -187,7 +194,6 @@ namespace Script {
     _creation.initializeAnimations();
     branch.appendChild(_creation);
     _array.push(_creation);
-    // console.log(_creation, _array);
   }
 
   export function hdlDestruction(_creation: Projectile | Octo, _array: any[]): void {
@@ -197,7 +203,6 @@ namespace Script {
         console.log(_array);
         _array = _array.splice(i, 1);
         console.log(_array);
-
       }
     }
   }
@@ -206,7 +211,6 @@ namespace Script {
    * set up the floor-tiles with a given texture for the whole stage
    */
   function setUpFloor(_texture: ƒ.Texture): void {
-
     // append one tile with phong shader
     let floorTile: ƒ.Node = new ƒ.Node("Tile");
     floorTile.addComponent(new ƒ.ComponentTransform);
@@ -238,12 +242,6 @@ namespace Script {
     }
     else
       return _number;
-  }
-
-  function prepareUI(): void {
-    let healthUI: HTMLInputElement = document.querySelector('input[key="health"]');
-    console.log(healthUI);
-    
   }
 
 }

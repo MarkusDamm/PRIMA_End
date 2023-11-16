@@ -2,14 +2,16 @@
 namespace Script {
 
   export class Projectile extends TexturedMoveable {
-    textureSrc: string = "./Images/Fireball16x16.png";
+    protected textureSrc: string = "./Images/Fireball16x16.png";
+    private soundSrc: string = "./Sounds/explosion.wav";
+    private cmpAudio: ƒ.ComponentAudio;
     static spriteDimensions: ƒ.Vector2 = new ƒ.Vector2(16, 16);
     protected animations: ƒAid.SpriteSheetAnimations = {};
-    velocity: ƒ.Vector3;
+    private velocity: ƒ.Vector3;
     protected speed: number = 3;
-    affinity: Affinity;
-    power: number;
-    state: State;
+    private affinity: Affinity;
+    private power: number;
+    private state: State;
 
     constructor(_position: ƒ.Vector3, _direction: ƒ.Vector2, _affinity: Affinity, _power: number, _spriteSource: string) {
       super("Projectile", "ProjectileSprite", Projectile.spriteDimensions);
@@ -23,6 +25,10 @@ namespace Script {
       this.affinity = _affinity;
       this.textureSrc = _spriteSource;
       this.power = _power;
+
+      let explosionAudio: ƒ.Audio = new ƒ.Audio(this.soundSrc);
+      this.cmpAudio = new ƒ.ComponentAudio(explosionAudio, false, false, audioManager);
+      this.cmpAudio.volume += 50;
 
       // add light
       let lightNode: ƒ.Node = new ƒ.Node("FlameLight");
@@ -80,6 +86,7 @@ namespace Script {
               let damageEvent: Event = new CustomEvent("Damage", { bubbles: true, detail: { _sourcePower: this.power, _sourcePos: this.mtxLocal.translation } })
               character.dispatchEvent(damageEvent);
               // play explosion
+              this.cmpAudio.play(true);
               this.state = State.Die;
               // then destroy projectile
               setTimeout(() => {

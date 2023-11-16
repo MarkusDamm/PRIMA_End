@@ -12,7 +12,7 @@ namespace Script {
   export class Flame extends Character {
     protected textureSrc: string = "./Images/H-Sheet32x32.png";
     protected animations: ƒAid.SpriteSheetAnimations = {};
-    fireballTextureSrc: string = "./Images/Fireball16x16.png";
+    private fireballTextureSrc: string = "./Images/Fireball16x16.png";
     public readonly affinity = Affinity.Flame;
 
     /**
@@ -21,6 +21,7 @@ namespace Script {
     private hitTimeout: Timeout;
     private isAttackAvailable: boolean = true;
     private velocity: ƒ.Vector2 = new ƒ.Vector2();
+    private gui: GUI;
 
     private lightNode: ƒ.Node;
 
@@ -31,6 +32,7 @@ namespace Script {
       this.health = config.player.health;
       this.power = config.player.power;
       console.log("Health: " + this.health);
+      this.gui = new GUI(this.health);
 
       this.addEventListener("Damage", this.takeDamage.bind(this));
 
@@ -97,6 +99,7 @@ namespace Script {
 
     public takeDamage(_event: CustomEvent): void {
       super.takeDamage(_event);
+      this.gui.health = this.health;
       console.log("Flame takes damage");
       
       if (!this.hasIFrames) {
