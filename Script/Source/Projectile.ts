@@ -26,9 +26,12 @@ namespace Script {
       this.textureSrc = _spriteSource;
       this.power = _power;
 
+      // add Audio Source
       let explosionAudio: ƒ.Audio = new ƒ.Audio(this.soundSrc);
-      this.cmpAudio = new ƒ.ComponentAudio(explosionAudio, false, false, audioManager);
-      this.cmpAudio.volume += 50;
+      this.cmpAudio = new ƒ.ComponentAudio(explosionAudio, false, false);
+      this.addComponent(this.cmpAudio);
+      this.cmpAudio.volume += 5;
+      this.cmpAudio.setPanner(ƒ.AUDIO_PANNER.CONE_INNER_ANGLE, 360);
 
       // add light
       let lightNode: ƒ.Node = new ƒ.Node("FlameLight");

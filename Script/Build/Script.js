@@ -402,17 +402,10 @@ var Script;
             alert("Nothing to render. Create a graph with at least a mesh, material and probably some light");
             return;
         }
-        Script.audioManager = new ƒ.AudioManager();
-        Script.audioManager.volume = 10;
         // setup the viewport
         let cmpCamera = new ƒ.ComponentCamera();
         Script.camNode = new ƒ.Node("Camera");
         Script.camNode.addComponent(cmpCamera);
-        let cmpAudioListener = new ƒ.ComponentAudioListener();
-        cmpAudioListener.activate(true);
-        Script.camNode.addComponent(cmpAudioListener);
-        Script.audioManager.listenWith(cmpAudioListener);
-        Script.audioManager.listenTo(branch);
         Script.camNode.addComponent(new ƒ.ComponentTransform());
         Script.camNode.mtxLocal.translateZ(30);
         Script.camNode.mtxLocal.rotateY(180, false);
@@ -422,6 +415,12 @@ var Script;
         viewport.initialize("InteractiveViewport", graph, cmpCamera, canvas);
         ƒ.Debug.log("Viewport:", viewport);
         branch = viewport.getBranch();
+        // add Audio
+        let cmpAudioListener = new ƒ.ComponentAudioListener();
+        Script.camNode.addComponent(cmpAudioListener);
+        ƒ.AudioManager.default.listenWith(cmpAudioListener);
+        ƒ.AudioManager.default.listenTo(branch);
+        ƒ.Debug.log("Audio:", ƒ.AudioManager.default);
         // hide the cursor when interacting, also suppressing right-click menu
         canvas.addEventListener("mousedown", canvas.requestPointerLock);
         canvas.addEventListener("mouseup", function () { document.exitPointerLock(); });
@@ -443,7 +442,6 @@ var Script;
         //can be put in Config
         addEnemy(100);
         ƒ.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, update);
-        Script.audioManager.resume();
         ƒ.Loop.start(); // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
     }
     function addEnemy(_amount) {
@@ -487,7 +485,7 @@ var Script;
         checkHitbox();
         // ƒ.Physics.simulate();  // if physics is included and used
         viewport.draw();
-        // ƒ.AudioManager.default.update();
+        ƒ.AudioManager.default.update();
     }
     function checkHitbox() {
         for (const character of Script.characters) {
@@ -646,9 +644,12 @@ var Script;
             this.affinity = _affinity;
             this.textureSrc = _spriteSource;
             this.power = _power;
+            // add Audio Source
             let explosionAudio = new ƒ.Audio(this.soundSrc);
-            this.cmpAudio = new ƒ.ComponentAudio(explosionAudio, false, false, Script.audioManager);
-            this.cmpAudio.volume += 50;
+            this.cmpAudio = new ƒ.ComponentAudio(explosionAudio, false, false);
+            this.addComponent(this.cmpAudio);
+            this.cmpAudio.volume += 5;
+            this.cmpAudio.setPanner(ƒ.AUDIO_PANNER.CONE_INNER_ANGLE, 360);
             // add light
             let lightNode = new ƒ.Node("FlameLight");
             lightNode.addComponent(new ƒ.ComponentTransform);

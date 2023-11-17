@@ -16,7 +16,6 @@ namespace Script {
   // global variables
   let viewport: ƒ.Viewport;
   let branch: ƒ.Node;
-  export let audioManager: ƒ.AudioManager;
   export let camNode: ƒ.Node;
   export let flame: Flame;
   export let characters: Character[] = [];
@@ -59,18 +58,11 @@ namespace Script {
       return;
     }
 
-    audioManager = new ƒ.AudioManager();
-    audioManager.volume = 10;
-    
     // setup the viewport
     let cmpCamera: ƒ.ComponentCamera = new ƒ.ComponentCamera();
     camNode = new ƒ.Node("Camera");
     camNode.addComponent(cmpCamera);
-    let cmpAudioListener = new ƒ.ComponentAudioListener();
-    cmpAudioListener.activate(true);
-    camNode.addComponent(cmpAudioListener);
-    audioManager.listenWith(cmpAudioListener);
-    audioManager.listenTo(branch);
+
     camNode.addComponent(new ƒ.ComponentTransform());
     camNode.mtxLocal.translateZ(30);
     camNode.mtxLocal.rotateY(180, false);
@@ -81,6 +73,13 @@ namespace Script {
     viewport.initialize("InteractiveViewport", graph, cmpCamera, canvas);
     ƒ.Debug.log("Viewport:", viewport);
     branch = viewport.getBranch();
+    
+    // add Audio
+    let cmpAudioListener = new ƒ.ComponentAudioListener();
+    camNode.addComponent(cmpAudioListener);
+    ƒ.AudioManager.default.listenWith(cmpAudioListener);
+    ƒ.AudioManager.default.listenTo(branch);
+    ƒ.Debug.log("Audio:", ƒ.AudioManager.default);
 
     // hide the cursor when interacting, also suppressing right-click menu
     canvas.addEventListener("mousedown", canvas.requestPointerLock);
@@ -111,7 +110,6 @@ namespace Script {
     addEnemy(100);
 
     ƒ.Loop.addEventListener(ƒ.EVENT.LOOP_FRAME, update);
-    audioManager.resume();
 
     ƒ.Loop.start();  // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
   }
@@ -160,7 +158,7 @@ namespace Script {
 
     // ƒ.Physics.simulate();  // if physics is included and used
     viewport.draw();
-    // ƒ.AudioManager.default.update();
+    ƒ.AudioManager.default.update();
   }
 
   function checkHitbox(): void {

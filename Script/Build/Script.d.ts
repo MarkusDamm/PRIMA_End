@@ -144,7 +144,6 @@ declare namespace Script {
         Die = 3,
         Hurt = 4
     }
-    let audioManager: ƒ.AudioManager;
     let camNode: ƒ.Node;
     let flame: Flame;
     let characters: Character[];

@@ -101,7 +101,7 @@ namespace Script {
       super.takeDamage(_event);
       this.gui.health = this.health;
       console.log("Flame takes damage");
-      
+
       if (!this.hasIFrames) {
 
         this.startIFrames(_event.detail._sourcePower * 1000);
