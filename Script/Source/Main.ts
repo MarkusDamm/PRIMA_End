@@ -16,9 +16,10 @@ namespace Script {
   // global variables
   let viewport: ƒ.Viewport;
   let branch: ƒ.Node;
+  let counterGUI: GUI;
   export let camNode: ƒ.Node;
   export let flame: Flame;
-  export let characters: Character[] = [];
+  export let entities: Entity[] = [];
   export let projectiles: Projectile[] = [];
 
   export let config: any;
@@ -73,7 +74,7 @@ namespace Script {
     viewport.initialize("InteractiveViewport", graph, cmpCamera, canvas);
     ƒ.Debug.log("Viewport:", viewport);
     branch = viewport.getBranch();
-    
+
     // add Audio
     let cmpAudioListener = new ƒ.ComponentAudioListener();
     camNode.addComponent(cmpAudioListener);
@@ -107,7 +108,9 @@ namespace Script {
     document.addEventListener("keydown", flame.attack);
 
     //can be put in Config
-    addEnemy(100);
+    addEnemy(config.stages.s01.enemyCount);
+    console.warn("EnemyCount for stage 1: " + config.stages.s01.enemyCount);
+    counterGUI = new GUI(GUIType.EnemyCount, config.stages.s01.enemyCount);
 
     ƒ.Loop.addEventListener(ƒ.EVENT.LOOP_FRAME, update);
 
@@ -128,7 +131,7 @@ namespace Script {
 
       let enemy: Octo = new Octo(randomPos);
       enemy.addEventListener("enemyIsClose", enemy.unveil);
-      hdlCreation(enemy, characters);
+      hdlCreation(enemy, entities);
       // enemy.initializeAnimations();
       // branch.appendChild(enemy);
       // characters.push(enemy);
@@ -147,7 +150,7 @@ namespace Script {
     Control.getInstance().update(deltaTime);
     // update Character
     flame.update();
-    for (const character of characters) {
+    for (const character of entities) {
       character.update(deltaTime);
     }
     for (const projectile of projectiles) {
@@ -156,26 +159,33 @@ namespace Script {
 
     checkHitbox();
 
+    // counterGUI.enemyCounter = entities.length;
     // ƒ.Physics.simulate();  // if physics is included and used
     viewport.draw();
     ƒ.AudioManager.default.update();
   }
 
   function checkHitbox(): void {
-    for (const character of characters) {
-      let posDifference: ƒ.Vector3 | ƒ.Vector2 = ƒ.Vector3.DIFFERENCE(flame.mtxLocal.translation, character.mtxLocal.translation);
+    for (const entity of entities) {
+      let posDifference: ƒ.Vector3 | ƒ.Vector2 = ƒ.Vector3.DIFFERENCE(flame.mtxLocal.translation, entity.mtxLocal.translation);
       posDifference = posDifference.toVector2();
       if (posDifference.magnitude < 6) {
-        character.dispatchEventToTargetOnly(new CustomEvent("enemyIsClose"))
+        entity.dispatchEventToTargetOnly(new CustomEvent("enemyIsClose"))
 
-        let dimensions: ƒ.Vector2 = ƒ.Vector2.SUM(flame.hitbox, character.hitbox);
+        let dimensions: ƒ.Vector2 = ƒ.Vector2.SUM(flame.hitbox, entity.hitbox);
         posDifference = new ƒ.Vector2(getAmount(posDifference.x), getAmount(posDifference.y));
         if (dimensions.x > posDifference.x && dimensions.y > posDifference.y) {
-          let damageEvent: Event = new CustomEvent("Damage", { bubbles: false, detail: { _sourcePower: character.power, _sourcePos: character.mtxLocal.translation } });
+          let damageEvent: Event = new CustomEvent("Damage", { bubbles: false, detail: { _sourcePower: entity.power, _sourcePos: entity.mtxLocal.translation } });
           flame.dispatchEventToTargetOnly(damageEvent);
         }
       }
     }
+  }
+
+  function checkDistance(_current: Entity, _target: Entity): number {
+    let posDifference: ƒ.Vector3 | ƒ.Vector2 = ƒ.Vector3.DIFFERENCE(_target.mtxLocal.translation, _current.mtxLocal.translation);
+    posDifference = posDifference.toVector2();
+    return posDifference.magnitude;
   }
 
   function stopLoop(_event: KeyboardEvent): void {
@@ -203,6 +213,7 @@ namespace Script {
         console.log(_array);
       }
     }
+    counterGUI.enemyCounter = entities.length;
   }
 
   /**

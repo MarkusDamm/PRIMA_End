@@ -12,3 +12,6 @@ B	  Physics	            - Add rigidbody components and work with collisions (1) 
 C	  Net	                - Add multiplayer functionality via network (3)
 o-D	State Machines	    - Create autonomous entities using the StateMachine (1) and/or ComponentStateMachine (1) defined in FudgeAid
 xE	Animation	          - Animate using the animation system of FudgeCore (1) and/or Sprites (1) as defined in FudgeAid
+
+o- Fireball Explosion Frames & Animation
+o- Gegner-Wellen (mit State Machine)

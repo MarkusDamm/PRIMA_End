@@ -20,5 +20,33 @@ canvas.fullscreen {
   position: absolute;
   top: 50px;
   left: 50px;
+  font-size: 2rem;
   color: crimson;
+}
+
+#vui>input[type=range]:disabled {
+  -webkit-appearance: none;
+}
+
+input[type=range]:disabled::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 10px;
+  height: 25px;
+  border-radius: 5em;
+  border: none;
+  box-shadow: 0 0 5px whitesmoke;
+  margin: -2px 0px -2px 0px;
+  background: rgb(212, 8, 49);
+}
+
+input[type=range]:disabled::-webkit-slider-runnable-track {
+  background: orange;
+  border-radius: 5em;
+}
+
+#vui>input[type=number]:disabled {
+  background-color: transparent;
+  border: none;
+  color: white;
+  font-size: 2rem;
 }

@@ -2,74 +2,12 @@
 var Script;
 (function (Script) {
     var ƒ = FudgeCore;
-    var ƒAid = FudgeAid;
-    ;
-    class TexturedMoveable extends ƒ.Node {
-        constructor(_name, _spriteName, _spriteDimensions) {
-            super(_name);
-            /**
-             * =16; 16 pixel equal one length unit
-            */
-            this.resolution = 16;
-            this.addComponent(new ƒ.ComponentTransform);
-            this.spriteNode = new ƒAid.NodeSprite(_spriteName);
-            this.spriteNode.addComponent(new ƒ.ComponentTransform);
-            this.appendChild(this.spriteNode);
-            this.hitbox = ƒ.Vector2.SCALE(_spriteDimensions, 1 / 32);
-        }
-        /**
-         * initializes the animations with
-         * @param _textureSrc URL to texture
-         * @param _rectangles Rectangles (Interface), to set up animation-frames
-         * @param _frames frames of the animation
-         * @param _offsetX offset to next frame
-         */
-        async initializeAnimations(_textureSrc, _rectangles, _frames, _offsetX) {
-            let texture = new ƒ.TextureImage();
-            await texture.load(_textureSrc);
-            let coat = new ƒ.CoatTextured(ƒ.Color.CSS("white"), texture);
-            let origin = ƒ.ORIGIN2D.CENTER;
-            let offsetNext = ƒ.Vector2.X(_offsetX);
-            this.initializeAnimationsByFrames(coat, _rectangles, _frames, origin, offsetNext);
-            this.spriteNode.setFrameDirection(1);
-            this.spriteNode.framerate = 6;
-        }
-        /**
-        * initializes multiple animation with the same amount of frames
-        */
-        initializeAnimationsByFrames(_coat, _rectangles, _frames, _orig, _offsetNext) {
-            for (let key in _rectangles) {
-                const rec = _rectangles[key];
-                let anim = new ƒAid.SpriteSheetAnimation(key, _coat);
-                let fRec = ƒ.Rectangle.GET(rec[0], rec[1], rec[2], rec[3]);
-                anim.generateByGrid(fRec, _frames, this.resolution, _orig, _offsetNext);
-                this.animations[key] = anim;
-            }
+    class AttributeUp extends ƒ.ComponentScript {
+        constructor() {
+            super();
         }
     }
-    Script.TexturedMoveable = TexturedMoveable;
-})(Script || (Script = {}));
-///<reference path="./TexturedMoveable.ts"/>
-var Script;
-///<reference path="./TexturedMoveable.ts"/>
-(function (Script) {
-    class Character extends Script.TexturedMoveable {
-        /**
-         * Create an character (Node) and add an transform-component
-         */
-        constructor(_name, _spriteName, _spriteDimensions) {
-            super(_name, _spriteName, _spriteDimensions);
-            this.hiddenTextureSrc = "./Images/Hidden.png";
-            this.hasIFrames = false;
-        }
-        takeDamage(_event) {
-            if (!this.hasIFrames) {
-                this.health -= _event.detail._sourcePower;
-            }
-            console.log(this.health);
-        }
-    }
-    Script.Character = Character;
+    Script.AttributeUp = AttributeUp;
 })(Script || (Script = {}));
 var Script;
 (function (Script) {
@@ -154,9 +92,81 @@ var Script;
     CustomComponentScript.iSubclass = ƒ.Component.registerSubclass(CustomComponentScript);
     Script.CustomComponentScript = CustomComponentScript;
 })(Script || (Script = {}));
-///<reference path="./Character.ts"/>
 var Script;
-///<reference path="./Character.ts"/>
+(function (Script) {
+    var ƒ = FudgeCore;
+    var ƒAid = FudgeAid;
+    ;
+    class TexturedMoveable extends ƒ.Node {
+        constructor(_name, _spriteName, _spriteDimensions) {
+            super(_name);
+            /**
+             * =16; 16 pixel equal one length unit
+            */
+            this.resolution = 16;
+            this.addComponent(new ƒ.ComponentTransform);
+            this.spriteNode = new ƒAid.NodeSprite(_spriteName);
+            this.spriteNode.addComponent(new ƒ.ComponentTransform);
+            this.appendChild(this.spriteNode);
+            this.hitbox = ƒ.Vector2.SCALE(_spriteDimensions, 1 / 32);
+        }
+        /**
+         * initializes the animations with
+         * @param _textureSrc URL to texture
+         * @param _rectangles Rectangles (Interface), to set up animation-frames
+         * @param _frames frames of the animation
+         * @param _offsetX offset to next frame
+         */
+        async initializeAnimations(_textureSrc, _rectangles, _frames, _offsetX) {
+            let texture = new ƒ.TextureImage();
+            await texture.load(_textureSrc);
+            let coat = new ƒ.CoatTextured(ƒ.Color.CSS("white"), texture);
+            let origin = ƒ.ORIGIN2D.CENTER;
+            let offsetNext = ƒ.Vector2.X(_offsetX);
+            this.initializeAnimationsByFrames(coat, _rectangles, _frames, origin, offsetNext);
+            this.spriteNode.setFrameDirection(1);
+            this.spriteNode.framerate = 6;
+        }
+        /**
+        * initializes multiple animation with the same amount of frames
+        */
+        initializeAnimationsByFrames(_coat, _rectangles, _frames, _orig, _offsetNext) {
+            for (let key in _rectangles) {
+                const rec = _rectangles[key];
+                let anim = new ƒAid.SpriteSheetAnimation(key, _coat);
+                let fRec = ƒ.Rectangle.GET(rec[0], rec[1], rec[2], rec[3]);
+                anim.generateByGrid(fRec, _frames, this.resolution, _orig, _offsetNext);
+                this.animations[key] = anim;
+            }
+        }
+    }
+    Script.TexturedMoveable = TexturedMoveable;
+})(Script || (Script = {}));
+///<reference path="./TexturedMoveable.ts"/>
+var Script;
+///<reference path="./TexturedMoveable.ts"/>
+(function (Script) {
+    class Entity extends Script.TexturedMoveable {
+        /**
+         * Create an character (Node) and add an transform-component
+         */
+        constructor(_name, _spriteName, _spriteDimensions) {
+            super(_name, _spriteName, _spriteDimensions);
+            this.hiddenTextureSrc = "./Images/Hidden.png";
+            this.hasIFrames = false;
+        }
+        takeDamage(_event) {
+            if (!this.hasIFrames) {
+                this.health -= _event.detail._sourcePower;
+            }
+            console.log(this.health);
+        }
+    }
+    Script.Entity = Entity;
+})(Script || (Script = {}));
+///<reference path="./Entity.ts"/>
+var Script;
+///<reference path="./Entity.ts"/>
 (function (Script) {
     var ƒ = FudgeCore;
     let Frames;
@@ -170,7 +180,7 @@ var Script;
     })(Frames || (Frames = {}));
     ;
     ;
-    class Flame extends Script.Character {
+    class Flame extends Script.Entity {
         constructor() {
             super("Flame", "FlameSprite", new ƒ.Vector2(32, 32));
             this.textureSrc = "./Images/H-Sheet32x32.png";
@@ -203,14 +213,15 @@ var Script;
                     this.isAttackAvailable = false;
                     setTimeout(() => {
                         this.isAttackAvailable = true;
-                    }, Script.config.player.attackCooldown);
+                    }, this.attackCooldown);
                 }
             };
             this.speed = Script.config.player.speed;
             this.health = Script.config.player.health;
             this.power = Script.config.player.power;
+            this.attackCooldown = Script.config.player.attackCooldown;
             console.log("Health: " + this.health);
-            this.gui = new Script.GUI(this.health);
+            this.gui = new Script.GUI(Script.GUIType.Health, this.health);
             this.addEventListener("Damage", this.takeDamage.bind(this));
             // add light
             this.lightNode = new ƒ.Node("FlameLight");
@@ -234,6 +245,7 @@ var Script;
             this.mtxLocal.translate(this.velocity.toVector3());
         }
         die() {
+            console.log("You Died!");
         }
         takeDamage(_event) {
             super.takeDamage(_event);
@@ -319,6 +331,12 @@ var Script;
                     break;
             }
         }
+        changeAttributes(_speedDifference, _healthDifference, _powerDifference, _cooldownDifference) {
+            this.speed += _speedDifference;
+            this.health += _healthDifference;
+            this.power += _powerDifference;
+            this.attackCooldown += _cooldownDifference;
+        }
         unveil() {
             // propably useless here
         }
@@ -329,13 +347,35 @@ var Script;
 (function (Script) {
     var ƒ = FudgeCore;
     var ƒUI = FudgeUserInterface;
+    let GUIType;
+    (function (GUIType) {
+        GUIType[GUIType["Health"] = 0] = "Health";
+        GUIType[GUIType["EnemyCount"] = 1] = "EnemyCount";
+    })(GUIType = Script.GUIType || (Script.GUIType = {}));
+    ;
     class GUI extends ƒ.Mutable {
-        constructor(_health) {
+        // public constructor(_value: number) {
+        //   super();
+        //   this.health = _value;
+        //   let healthUI: HTMLElement = document.querySelector("div#vui");
+        //   console.log("connect GUI");
+        //   new ƒUI.Controller(this, healthUI);
+        // }
+        constructor(_type, _value) {
             super();
-            this.health = _health;
-            let healthUI = document.querySelector("div#vui");
-            console.log("connect health");
-            new ƒUI.Controller(this, healthUI);
+            switch (_type) {
+                case GUIType.Health:
+                    this.health = _value;
+                    break;
+                case GUIType.EnemyCount:
+                    this.enemyCounter = _value;
+                    break;
+                default:
+                    break;
+            }
+            let UI = document.querySelector("div#vui");
+            console.log("connect GUI");
+            new ƒUI.Controller(this, UI);
         }
         reduceMutator(_mutator) { }
         /**
@@ -371,7 +411,8 @@ var Script;
     // global variables
     let viewport;
     let branch;
-    Script.characters = [];
+    let counterGUI;
+    Script.entities = [];
     Script.projectiles = [];
     document.addEventListener("interactiveViewportStarted", start);
     window.addEventListener("load", init);
@@ -440,7 +481,9 @@ var Script;
         // characters.push(flame);
         document.addEventListener("keydown", Script.flame.attack);
         //can be put in Config
-        addEnemy(100);
+        addEnemy(Script.config.stages.s01.enemyCount);
+        console.warn("EnemyCount for stage 1: " + Script.config.stages.s01.enemyCount);
+        counterGUI = new Script.GUI(Script.GUIType.EnemyCount, Script.config.stages.s01.enemyCount);
         ƒ.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, update);
         ƒ.Loop.start(); // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
     }
@@ -459,7 +502,7 @@ var Script;
             let randomPos = new ƒ.Vector3(randomX, randomY);
             let enemy = new Script.Octo(randomPos);
             enemy.addEventListener("enemyIsClose", enemy.unveil);
-            hdlCreation(enemy, Script.characters);
+            hdlCreation(enemy, Script.entities);
             // enemy.initializeAnimations();
             // branch.appendChild(enemy);
             // characters.push(enemy);
@@ -476,31 +519,37 @@ var Script;
         Script.Control.getInstance().update(deltaTime);
         // update Character
         Script.flame.update();
-        for (const character of Script.characters) {
+        for (const character of Script.entities) {
             character.update(deltaTime);
         }
         for (const projectile of Script.projectiles) {
             projectile.update(deltaTime);
         }
         checkHitbox();
+        // counterGUI.enemyCounter = entities.length;
         // ƒ.Physics.simulate();  // if physics is included and used
         viewport.draw();
         ƒ.AudioManager.default.update();
     }
     function checkHitbox() {
-        for (const character of Script.characters) {
-            let posDifference = ƒ.Vector3.DIFFERENCE(Script.flame.mtxLocal.translation, character.mtxLocal.translation);
+        for (const entity of Script.entities) {
+            let posDifference = ƒ.Vector3.DIFFERENCE(Script.flame.mtxLocal.translation, entity.mtxLocal.translation);
             posDifference = posDifference.toVector2();
             if (posDifference.magnitude < 6) {
-                character.dispatchEventToTargetOnly(new CustomEvent("enemyIsClose"));
-                let dimensions = ƒ.Vector2.SUM(Script.flame.hitbox, character.hitbox);
+                entity.dispatchEventToTargetOnly(new CustomEvent("enemyIsClose"));
+                let dimensions = ƒ.Vector2.SUM(Script.flame.hitbox, entity.hitbox);
                 posDifference = new ƒ.Vector2(getAmount(posDifference.x), getAmount(posDifference.y));
                 if (dimensions.x > posDifference.x && dimensions.y > posDifference.y) {
-                    let damageEvent = new CustomEvent("Damage", { bubbles: false, detail: { _sourcePower: character.power, _sourcePos: character.mtxLocal.translation } });
+                    let damageEvent = new CustomEvent("Damage", { bubbles: false, detail: { _sourcePower: entity.power, _sourcePos: entity.mtxLocal.translation } });
                     Script.flame.dispatchEventToTargetOnly(damageEvent);
                 }
             }
         }
+    }
+    function checkDistance(_current, _target) {
+        let posDifference = ƒ.Vector3.DIFFERENCE(_target.mtxLocal.translation, _current.mtxLocal.translation);
+        posDifference = posDifference.toVector2();
+        return posDifference.magnitude;
     }
     function stopLoop(_event) {
         if (_event.key == "p") {
@@ -526,6 +575,7 @@ var Script;
                 console.log(_array);
             }
         }
+        counterGUI.enemyCounter = Script.entities.length;
     }
     Script.hdlDestruction = hdlDestruction;
     /**
@@ -566,7 +616,7 @@ var Script;
 })(Script || (Script = {}));
 var Script;
 (function (Script) {
-    class Octo extends Script.Character {
+    class Octo extends Script.Entity {
         constructor(_spawnPosition) {
             super("Octo", "OctoSprite", new ƒ.Vector2(16, 16));
             this.textureSrc = "./Images/ALTTP_Octo16x16.png";
@@ -610,7 +660,7 @@ var Script;
             // console.log(this, "takes damage ", _event.detail._sourcePos);
         }
         die() {
-            Script.hdlDestruction(this, Script.characters);
+            Script.hdlDestruction(this, Script.entities);
         }
         update(_deltaTime) {
             this.move(_deltaTime);
@@ -687,17 +737,17 @@ var Script;
             }
         }
         checkForCollision() {
-            for (const character of Script.characters) {
-                if (this.affinity != character.affinity) {
-                    let posDifference = ƒ.Vector3.DIFFERENCE(this.mtxLocal.translation, character.mtxLocal.translation);
+            for (const entity of Script.entities) {
+                if (this.affinity != entity.affinity) {
+                    let posDifference = ƒ.Vector3.DIFFERENCE(this.mtxLocal.translation, entity.mtxLocal.translation);
                     posDifference = posDifference.toVector2();
                     if (posDifference.magnitude < 6) {
-                        let dimensions = ƒ.Vector2.SUM(this.hitbox, character.hitbox);
+                        let dimensions = ƒ.Vector2.SUM(this.hitbox, entity.hitbox);
                         posDifference = new ƒ.Vector2(Script.getAmount(posDifference.x), Script.getAmount(posDifference.y));
                         if (dimensions.x > posDifference.x && dimensions.y > posDifference.y) {
                             // character.takeDamage(character.power, character.mtxLocal.translation);
                             let damageEvent = new CustomEvent("Damage", { bubbles: true, detail: { _sourcePower: this.power, _sourcePos: this.mtxLocal.translation } });
-                            character.dispatchEvent(damageEvent);
+                            entity.dispatchEvent(damageEvent);
                             // play explosion
                             this.cmpAudio.play(true);
                             this.state = Script.State.Die;
@@ -710,6 +760,30 @@ var Script;
                 }
             }
         }
+        // private checkForCollision(): void {
+        //   for (const entity of entities) {
+        //     if (this.affinity != entity.affinity) {
+        //       let posDifference: ƒ.Vector3 | ƒ.Vector2 = ƒ.Vector3.DIFFERENCE(this.mtxLocal.translation, entity.mtxLocal.translation);
+        //       posDifference = posDifference.toVector2();
+        //       if (posDifference.magnitude < 6) {
+        //         let dimensions: ƒ.Vector2 = ƒ.Vector2.SUM(this.hitbox, entity.hitbox);
+        //         posDifference = new ƒ.Vector2(getAmount(posDifference.x), getAmount(posDifference.y));
+        //         if (dimensions.x > posDifference.x && dimensions.y > posDifference.y) {
+        //           // character.takeDamage(character.power, character.mtxLocal.translation);
+        //           let damageEvent: Event = new CustomEvent("Damage", { bubbles: true, detail: { _sourcePower: this.power, _sourcePos: this.mtxLocal.translation } })
+        //           entity.dispatchEvent(damageEvent);
+        //           // play explosion
+        //           this.cmpAudio.play(true);
+        //           this.state = State.Die;
+        //           // then destroy projectile
+        //           setTimeout(() => {
+        //             hdlDestruction(this, projectiles);
+        //           }, 1000);
+        //         }
+        //       }
+        //     }
+        //   }
+        // }
         async initializeAnimations() {
             let rectangles = { "idle": [0, 0, 16, 16] };
             await super.initializeAnimations(this.textureSrc, rectangles, 1, this.resolution);

@@ -1,7 +1,7 @@
 namespace Script {
   import ƒAid = FudgeAid;
 
-  export class Octo extends Character {
+  export class Octo extends Entity {
     protected textureSrc: string = "./Images/ALTTP_Octo16x16.png";
     protected animations: ƒAid.SpriteSheetAnimations = {};
     public readonly affinity = Affinity.Enemy;
@@ -58,7 +58,7 @@ namespace Script {
     }
 
     die(): void {
-      hdlDestruction(this, characters);
+      hdlDestruction(this, entities);
     }
 
     public update(_deltaTime: number): void {

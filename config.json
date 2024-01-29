@@ -14,6 +14,16 @@
     "characterDelay": 300,
     "cameraDelay": 500
   },
+  "stages":{
+    "s01":{
+      "enemyCount": 10,
+      "enemyType": "Octo"
+    },
+    "s02":{
+      "enemyCount": 25,
+      "enemyType": "Octo"
+    }
+  },
   "stage": {
     "floorTextureSource": "./Images/Floor-TileBorderless24x24.png",
     "dimensionX": 150,

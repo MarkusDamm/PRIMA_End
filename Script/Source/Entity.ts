@@ -2,7 +2,7 @@
 namespace Script {
   import ƒ = FudgeCore;
 
-  export abstract class Character extends TexturedMoveable {
+  export abstract class Entity extends TexturedMoveable {
     protected hiddenTextureSrc: string = "./Images/Hidden.png";
 
     protected health: number;

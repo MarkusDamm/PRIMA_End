@@ -1,4 +1,4 @@
-///<reference path="./Character.ts"/>
+///<reference path="./Entity.ts"/>
 namespace Script {
   import ƒ = FudgeCore;
   import ƒAid = FudgeAid;
@@ -9,7 +9,7 @@ namespace Script {
 
   export interface Timeout { timeoutID: number, duration: number };
 
-  export class Flame extends Character {
+  export class Flame extends Entity {
     protected textureSrc: string = "./Images/H-Sheet32x32.png";
     protected animations: ƒAid.SpriteSheetAnimations = {};
     private fireballTextureSrc: string = "./Images/Fireball16x16.png";
@@ -19,6 +19,7 @@ namespace Script {
      * saves the id from the last started timeout related to taking damage as well as the remaining duration
      */
     private hitTimeout: Timeout;
+    private attackCooldown: number;
     private isAttackAvailable: boolean = true;
     private velocity: ƒ.Vector2 = new ƒ.Vector2();
     private gui: GUI;
@@ -31,8 +32,9 @@ namespace Script {
       this.speed = config.player.speed;
       this.health = config.player.health;
       this.power = config.player.power;
+      this.attackCooldown = config.player.attackCooldown;
       console.log("Health: " + this.health);
-      this.gui = new GUI(this.health);
+      this.gui = new GUI(GUIType.Health, this.health);
 
       this.addEventListener("Damage", this.takeDamage.bind(this));
 
@@ -79,7 +81,7 @@ namespace Script {
         this.isAttackAvailable = false;
         setTimeout(() => {
           this.isAttackAvailable = true;
-        }, config.player.attackCooldown);
+        }, this.attackCooldown);
       }
     }
 
@@ -94,7 +96,7 @@ namespace Script {
     }
 
     die(): void {
-
+      console.log("You Died!");
     }
 
     public takeDamage(_event: CustomEvent): void {
@@ -195,6 +197,13 @@ namespace Script {
           console.log("no valid Frame");
           break;
       }
+    }
+
+    private changeAttributes(_speedDifference: number, _healthDifference: number, _powerDifference: number, _cooldownDifference: number): void {
+      this.speed += _speedDifference;
+      this.health += _healthDifference;
+      this.power += _powerDifference;
+      this.attackCooldown += _cooldownDifference;
     }
 
     unveil(): void {

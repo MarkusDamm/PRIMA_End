@@ -1,52 +1,7 @@
 declare namespace Script {
     import ƒ = FudgeCore;
-    import ƒAid = FudgeAid;
-    interface Rectangles {
-        [label: string]: number[];
-    }
-    abstract class TexturedMoveable extends ƒ.Node {
-        protected textureSrc: string;
-        protected spriteNode: ƒAid.NodeSprite;
-        protected animations: ƒAid.SpriteSheetAnimations;
-        hitbox: ƒ.Vector2;
-        /**
-         * =16; 16 pixel equal one length unit
-        */
-        protected readonly resolution: number;
-        protected speed: number;
-        constructor(_name: string, _spriteName: string, _spriteDimensions: ƒ.Vector2);
-        abstract update(_deltaTime: number): void;
-        /**
-         * initializes the animations with
-         * @param _textureSrc URL to texture
-         * @param _rectangles Rectangles (Interface), to set up animation-frames
-         * @param _frames frames of the animation
-         * @param _offsetX offset to next frame
-         */
-        initializeAnimations(_textureSrc: string, _rectangles: Rectangles, _frames: number, _offsetX: number): Promise<void>;
-        /**
-        * initializes multiple animation with the same amount of frames
-        */
-        protected initializeAnimationsByFrames(_coat: ƒ.CoatTextured, _rectangles: Rectangles, _frames: number, _orig: ƒ.ORIGIN2D, _offsetNext: ƒ.Vector2): void;
-    }
-}
-declare namespace Script {
-    import ƒ = FudgeCore;
-    abstract class Character extends TexturedMoveable {
-        protected hiddenTextureSrc: string;
-        protected health: number;
-        power: number;
-        protected state: State;
-        protected hasIFrames: boolean;
-        readonly affinity: Affinity;
-        /**
-         * Create an character (Node) and add an transform-component
-         */
-        constructor(_name: string, _spriteName: string, _spriteDimensions: ƒ.Vector2);
-        abstract attack(_event?: Event | KeyboardEvent): void;
-        abstract die(): void;
-        abstract unveil(): void;
-        takeDamage(_event: CustomEvent): void;
+    class AttributeUp extends ƒ.ComponentScript {
+        constructor();
     }
 }
 declare namespace Script {
@@ -84,12 +39,63 @@ declare namespace Script {
     }
 }
 declare namespace Script {
+    import ƒ = FudgeCore;
+    import ƒAid = FudgeAid;
+    interface Rectangles {
+        [label: string]: number[];
+    }
+    abstract class TexturedMoveable extends ƒ.Node {
+        protected textureSrc: string;
+        protected spriteNode: ƒAid.NodeSprite;
+        protected animations: ƒAid.SpriteSheetAnimations;
+        hitbox: ƒ.Vector2;
+        /**
+         * =16; 16 pixel equal one length unit
+        */
+        protected readonly resolution: number;
+        protected speed: number;
+        constructor(_name: string, _spriteName: string, _spriteDimensions: ƒ.Vector2);
+        abstract update(_deltaTime: number): void;
+        /**
+         * initializes the animations with
+         * @param _textureSrc URL to texture
+         * @param _rectangles Rectangles (Interface), to set up animation-frames
+         * @param _frames frames of the animation
+         * @param _offsetX offset to next frame
+         */
+        initializeAnimations(_textureSrc: string, _rectangles: Rectangles, _frames: number, _offsetX: number): Promise<void>;
+        /**
+        * initializes multiple animation with the same amount of frames
+        */
+        protected initializeAnimationsByFrames(_coat: ƒ.CoatTextured, _rectangles: Rectangles, _frames: number, _orig: ƒ.ORIGIN2D, _offsetNext: ƒ.Vector2): void;
+    }
+}
+declare namespace Script {
+    import ƒ = FudgeCore;
+    abstract class Entity extends TexturedMoveable {
+        protected hiddenTextureSrc: string;
+        protected health: number;
+        power: number;
+        protected state: State;
+        protected hasIFrames: boolean;
+        readonly affinity: Affinity;
+        /**
+         * Create an character (Node) and add an transform-component
+         */
+        constructor(_name: string, _spriteName: string, _spriteDimensions: ƒ.Vector2);
+        abstract attack(_event?: Event | KeyboardEvent): void;
+        abstract die(): void;
+        abstract unveil(): void;
+        takeDamage(_event: CustomEvent): void;
+    }
+}
+declare namespace Script {
     import ƒAid = FudgeAid;
     interface Timeout {
         timeoutID: number;
         duration: number;
     }
-    class Flame extends Character {
+    class Flame extends Entity {
         protected textureSrc: string;
         protected animations: ƒAid.SpriteSheetAnimations;
         private fireballTextureSrc;
@@ -98,6 +104,7 @@ declare namespace Script {
          * saves the id from the last started timeout related to taking damage as well as the remaining duration
          */
         private hitTimeout;
+        private attackCooldown;
         private isAttackAvailable;
         private velocity;
         private gui;
@@ -116,14 +123,20 @@ declare namespace Script {
          * @param _state current Frame
          */
         private chooseAnimation;
+        private changeAttributes;
         unveil(): void;
     }
 }
 declare namespace Script {
     import ƒ = FudgeCore;
+    enum GUIType {
+        Health = 0,
+        EnemyCount = 1
+    }
     class GUI extends ƒ.Mutable {
         health: number;
-        constructor(_health: number);
+        enemyCounter: number;
+        constructor(_type: GUIType, _value: number);
         protected reduceMutator(_mutator: ƒ.Mutator): void;
         /**
          * updateUI
@@ -146,7 +159,7 @@ declare namespace Script {
     }
     let camNode: ƒ.Node;
     let flame: Flame;
-    let characters: Character[];
+    let entities: Entity[];
     let projectiles: Projectile[];
     let config: any;
     function hdlCreation(_creation: Projectile | Octo, _array: any[]): void;
@@ -158,7 +171,7 @@ declare namespace Script {
 }
 declare namespace Script {
     import ƒAid = FudgeAid;
-    class Octo extends Character {
+    class Octo extends Entity {
         protected textureSrc: string;
         protected animations: ƒAid.SpriteSheetAnimations;
         readonly affinity = Affinity.Enemy;

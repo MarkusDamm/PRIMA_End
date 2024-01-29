@@ -77,17 +77,17 @@ namespace Script {
     }
 
     private checkForCollision(): void {
-      for (const character of characters) {
-        if (this.affinity != character.affinity) {
-          let posDifference: ƒ.Vector3 | ƒ.Vector2 = ƒ.Vector3.DIFFERENCE(this.mtxLocal.translation, character.mtxLocal.translation);
+      for (const entity of entities) {
+        if (this.affinity != entity.affinity) {
+          let posDifference: ƒ.Vector3 | ƒ.Vector2 = ƒ.Vector3.DIFFERENCE(this.mtxLocal.translation, entity.mtxLocal.translation);
           posDifference = posDifference.toVector2();
           if (posDifference.magnitude < 6) {
-            let dimensions: ƒ.Vector2 = ƒ.Vector2.SUM(this.hitbox, character.hitbox);
+            let dimensions: ƒ.Vector2 = ƒ.Vector2.SUM(this.hitbox, entity.hitbox);
             posDifference = new ƒ.Vector2(getAmount(posDifference.x), getAmount(posDifference.y));
             if (dimensions.x > posDifference.x && dimensions.y > posDifference.y) {
               // character.takeDamage(character.power, character.mtxLocal.translation);
               let damageEvent: Event = new CustomEvent("Damage", { bubbles: true, detail: { _sourcePower: this.power, _sourcePos: this.mtxLocal.translation } })
-              character.dispatchEvent(damageEvent);
+              entity.dispatchEvent(damageEvent);
               // play explosion
               this.cmpAudio.play(true);
               this.state = State.Die;
@@ -100,6 +100,31 @@ namespace Script {
         }
       }
     }
+
+    // private checkForCollision(): void {
+    //   for (const entity of entities) {
+    //     if (this.affinity != entity.affinity) {
+    //       let posDifference: ƒ.Vector3 | ƒ.Vector2 = ƒ.Vector3.DIFFERENCE(this.mtxLocal.translation, entity.mtxLocal.translation);
+    //       posDifference = posDifference.toVector2();
+    //       if (posDifference.magnitude < 6) {
+    //         let dimensions: ƒ.Vector2 = ƒ.Vector2.SUM(this.hitbox, entity.hitbox);
+    //         posDifference = new ƒ.Vector2(getAmount(posDifference.x), getAmount(posDifference.y));
+    //         if (dimensions.x > posDifference.x && dimensions.y > posDifference.y) {
+    //           // character.takeDamage(character.power, character.mtxLocal.translation);
+    //           let damageEvent: Event = new CustomEvent("Damage", { bubbles: true, detail: { _sourcePower: this.power, _sourcePos: this.mtxLocal.translation } })
+    //           entity.dispatchEvent(damageEvent);
+    //           // play explosion
+    //           this.cmpAudio.play(true);
+    //           this.state = State.Die;
+    //           // then destroy projectile
+    //           setTimeout(() => {
+    //             hdlDestruction(this, projectiles);
+    //           }, 1000);
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
 
     public async initializeAnimations(): Promise<void> {
       let rectangles: Rectangles = { "idle": [0, 0, 16, 16] };
