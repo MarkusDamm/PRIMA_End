@@ -1,3 +1,4 @@
+///<reference path="./Entity.ts"/>
 namespace Script {
   import ƒAid = FudgeAid;
 

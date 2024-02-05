@@ -389,6 +389,73 @@ var Script;
 var Script;
 (function (Script) {
     var ƒ = FudgeCore;
+    var ƒAid = FudgeAid;
+    let GameState;
+    (function (GameState) {
+        GameState[GameState["Start"] = 0] = "Start";
+        GameState[GameState["Running"] = 1] = "Running";
+        GameState[GameState["Victory"] = 2] = "Victory";
+        GameState[GameState["Defeat"] = 3] = "Defeat";
+    })(GameState || (GameState = {}));
+    ;
+    class GameStateMachine extends ƒAid.StateMachine {
+        constructor() {
+            super();
+            this.update = (_event) => { this.act(); };
+            this.instructions = GameStateMachine.instructions;
+            // Don't start when running in editor
+            if (ƒ.Project.mode == ƒ.MODE.EDITOR)
+                return;
+        }
+        /**
+         * accsess the instance of GameStateMachine
+         */
+        static getInstance() {
+            if (!GameStateMachine.instance) {
+                GameStateMachine.instance = new GameStateMachine();
+                ƒ.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, GameStateMachine.instance.update);
+            }
+            return GameStateMachine.instance;
+        }
+        /**
+         * setup the instructions from the methods to the state
+         */
+        static getInstructions() {
+            let setup = new ƒAid.StateMachineInstructions();
+            setup.transitDefault = GameStateMachine.transitDefault;
+            setup.actDefault = GameStateMachine.actDefault;
+            setup.setAction(GameState.Start, this.actStart);
+            // setup.setAction(GameState.Running, <ƒ.General>this.actRunning);
+            setup.setTransition(GameState.Start, GameState.Running, GameStateMachine.transitState);
+            return setup;
+        }
+        static transitDefault(_machine) {
+            //nothing?
+            console.log("default transition");
+        }
+        static actDefault(_machine) {
+            //not needed?
+            console.log("default action");
+        }
+        static actStart(_machine) {
+            //spawn enemies
+            console.log("start action");
+        }
+        static actRunning(_machine) {
+            //not needed?
+            console.log("running action");
+        }
+        static transitState(_machine) {
+            //not needed?
+            console.log("state transition");
+        }
+    }
+    GameStateMachine.instructions = GameStateMachine.getInstructions();
+    Script.GameStateMachine = GameStateMachine;
+})(Script || (Script = {}));
+var Script;
+(function (Script) {
+    var ƒ = FudgeCore;
     ƒ.Debug.info("Main Program Template running!");
     let Affinity;
     (function (Affinity) {
@@ -412,6 +479,7 @@ var Script;
     let viewport;
     let branch;
     let counterGUI;
+    let gameStateMachine;
     Script.entities = [];
     Script.projectiles = [];
     document.addEventListener("interactiveViewportStarted", start);
@@ -479,6 +547,8 @@ var Script;
         Script.flame.initializeAnimations();
         branch.appendChild(Script.flame);
         // characters.push(flame);
+        gameStateMachine = Script.GameStateMachine.getInstance();
+        console.log("GameStateMachine: ", gameStateMachine);
         document.addEventListener("keydown", Script.flame.attack);
         //can be put in Config
         addEnemy(Script.config.stages.s01.enemyCount);
@@ -526,6 +596,7 @@ var Script;
             projectile.update(deltaTime);
         }
         checkHitbox();
+        // gameStateMachine.update();
         // counterGUI.enemyCounter = entities.length;
         // ƒ.Physics.simulate();  // if physics is included and used
         viewport.draw();
@@ -614,7 +685,9 @@ var Script;
     }
     Script.getAmount = getAmount;
 })(Script || (Script = {}));
+///<reference path="./Entity.ts"/>
 var Script;
+///<reference path="./Entity.ts"/>
 (function (Script) {
     class Octo extends Script.Entity {
         constructor(_spawnPosition) {

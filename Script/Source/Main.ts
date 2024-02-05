@@ -17,6 +17,7 @@ namespace Script {
   let viewport: ƒ.Viewport;
   let branch: ƒ.Node;
   let counterGUI: GUI;
+  let gameStateMachine: GameStateMachine;
   export let camNode: ƒ.Node;
   export let flame: Flame;
   export let entities: Entity[] = [];
@@ -105,6 +106,9 @@ namespace Script {
     branch.appendChild(flame);
     // characters.push(flame);
 
+    gameStateMachine = GameStateMachine.getInstance();
+    console.log("GameStateMachine: ",gameStateMachine);
+    
     document.addEventListener("keydown", flame.attack);
 
     //can be put in Config
@@ -158,6 +162,7 @@ namespace Script {
     }
 
     checkHitbox();
+    // gameStateMachine.update();
 
     // counterGUI.enemyCounter = entities.length;
     // ƒ.Physics.simulate();  // if physics is included and used

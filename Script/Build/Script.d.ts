@@ -145,6 +145,35 @@ declare namespace Script {
     }
 }
 declare namespace Script {
+    import ƒAid = FudgeAid;
+    enum GameState {
+        Start = 0,
+        Running = 1,
+        Victory = 2,
+        Defeat = 3
+    }
+    export class GameStateMachine extends ƒAid.StateMachine<GameState> {
+        private static instance;
+        private static instructions;
+        constructor();
+        /**
+         * accsess the instance of GameStateMachine
+         */
+        static getInstance(): GameStateMachine;
+        /**
+         * setup the instructions from the methods to the state
+         */
+        static getInstructions(): ƒAid.StateMachineInstructions<GameState>;
+        private static transitDefault;
+        private static actDefault;
+        private static actStart;
+        private static actRunning;
+        private static transitState;
+        private update;
+    }
+    export {};
+}
+declare namespace Script {
     import ƒ = FudgeCore;
     enum Affinity {
         Flame = 0,
