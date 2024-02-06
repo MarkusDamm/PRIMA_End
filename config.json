@@ -1,5 +1,12 @@
 {
   "player": {
+    "name": "Flame",
+    "textureSrc": "./Images/H-Sheet32x32.png",
+    "hiddenTextureSrc": "",
+    "spriteDimensions": [
+      32,
+      32
+    ],
     "speed": 10,
     "health": 10,
     "power": 2,
@@ -10,16 +17,42 @@
     "health": 5,
     "power": 1
   },
+  "enemies": {
+    "octo": {
+      "name": "Octo",
+      "textureSrc": "./Images/ALTTP_Octo16x16.png",
+      "hiddenTextureSrc": "./Images/Hidden16x16.png",
+      "spriteDimensions": [
+        16,
+        16
+      ],
+      "speed": 3,
+      "health": 5,
+      "power": 1
+    },
+    "goriya": {
+      "name": "Goriya",
+      "textureSrc": "./Images/Goriya22x25.png",
+      "hiddenTextureSrc": "./Images/Goriya-Hidden22x25.png",
+      "spriteDimensions": [
+        22,
+        25
+      ],
+      "speed": 5,
+      "health": 12,
+      "power": 2
+    }
+  },
   "control": {
     "characterDelay": 300,
     "cameraDelay": 500
   },
-  "stages":{
-    "s01":{
+  "stages": {
+    "s01": {
       "enemyCount": 10,
       "enemyType": "Octo"
     },
-    "s02":{
+    "s02": {
       "enemyCount": 25,
       "enemyType": "Octo"
     }

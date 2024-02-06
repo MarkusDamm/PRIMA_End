@@ -6,7 +6,7 @@ namespace Script {
     Flame, Enemy
   };
   export enum State {
-    Idle, Move, Attack, Die, Hurt
+    Hidden, Idle, Move, Attack, Die, Hurt
   };
 
   // from config
@@ -100,19 +100,19 @@ namespace Script {
     await floorTexture.load(floorTileSrc);
     setUpFloor(floorTexture);
 
-    flame = new Flame();
+    flame = new Flame(await config.player);
     Control.getInstance();
-    flame.initializeAnimations();
+    // flame.initializeAnimations();
     branch.appendChild(flame);
     // characters.push(flame);
 
     gameStateMachine = GameStateMachine.getInstance();
-    console.log("GameStateMachine: ",gameStateMachine);
-    
+    console.log("GameStateMachine: ", gameStateMachine);
+
     document.addEventListener("keydown", flame.attack);
 
     //can be put in Config
-    addEnemy(config.stages.s01.enemyCount);
+    addEnemy(await config.stages.s01.enemyCount);
     console.warn("EnemyCount for stage 1: " + config.stages.s01.enemyCount);
     counterGUI = new GUI(GUIType.EnemyCount, config.stages.s01.enemyCount);
 
@@ -133,8 +133,15 @@ namespace Script {
 
       let randomPos: ƒ.Vector3 = new ƒ.Vector3(randomX, randomY);
 
-      let enemy: Octo = new Octo(randomPos);
-      enemy.addEventListener("enemyIsClose", enemy.unveil);
+      let enemy: Entity;
+      if (index % 2 == 0) {
+        enemy = new Octo(randomPos, config.enemies.octo);
+      }
+      else {
+        enemy = new Goriya(randomPos, config.enemies.goriya);
+      }
+
+      // enemy.addEventListener("enemyIsClose", enemy.unveil);
       hdlCreation(enemy, entities);
       // enemy.initializeAnimations();
       // branch.appendChild(enemy);
@@ -203,8 +210,8 @@ namespace Script {
     }
   }
 
-  export function hdlCreation(_creation: Projectile | Octo, _array: any[]): void {
-    _creation.initializeAnimations();
+  export function hdlCreation(_creation: Projectile | Entity, _array: any[]): void {
+    // _creation.initializeAnimations();
     branch.appendChild(_creation);
     _array.push(_creation);
   }

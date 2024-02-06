@@ -24,7 +24,7 @@ namespace Script {
       this.spriteNode.addComponent(new ƒ.ComponentTransform);
       this.appendChild(this.spriteNode);
 
-      this.hitbox = ƒ.Vector2.SCALE(_spriteDimensions, 1 / 32);
+      this.hitbox = ƒ.Vector2.SCALE(_spriteDimensions, (1 / 32));
     }
 
     public abstract update(_deltaTime: number): void;
@@ -36,7 +36,7 @@ namespace Script {
      * @param _frames frames of the animation 
      * @param _offsetX offset to next frame
      */
-    public async initializeAnimations(_textureSrc: string, _rectangles: Rectangles, _frames: number, _offsetX: number): Promise<void> {
+    protected async initializeAnimations(_textureSrc: string, _rectangles: Rectangles, _frames: number, _offsetX: number): Promise<void> {
       let texture: ƒ.TextureImage = new ƒ.TextureImage();
       await texture.load(_textureSrc);
 

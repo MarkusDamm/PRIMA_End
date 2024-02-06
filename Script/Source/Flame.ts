@@ -10,10 +10,10 @@ namespace Script {
   export interface Timeout { timeoutID: number, duration: number };
 
   export class Flame extends Entity {
-    protected textureSrc: string = "./Images/H-Sheet32x32.png";
-    protected animations: ƒAid.SpriteSheetAnimations = {};
+    // protected textureSrc: string = "./Images/H-Sheet32x32.png";
     private fireballTextureSrc: string = "./Images/Fireball16x16.png";
     public readonly affinity = Affinity.Flame;
+    protected velocity: ƒ.Vector2 = new ƒ.Vector2();
 
     /**
      * saves the id from the last started timeout related to taking damage as well as the remaining duration
@@ -21,17 +21,13 @@ namespace Script {
     private hitTimeout: Timeout;
     private attackCooldown: number;
     private isAttackAvailable: boolean = true;
-    private velocity: ƒ.Vector2 = new ƒ.Vector2();
     private gui: GUI;
 
     private lightNode: ƒ.Node;
 
-    constructor() {
-      super("Flame", "FlameSprite", new ƒ.Vector2(32, 32));
+    constructor(_data: any) {
+      super(_data);
 
-      this.speed = config.player.speed;
-      this.health = config.player.health;
-      this.power = config.player.power;
       this.attackCooldown = config.player.attackCooldown;
       console.log("Health: " + this.health);
       this.gui = new GUI(GUIType.Health, this.health);
@@ -44,10 +40,11 @@ namespace Script {
       let light: ƒ.Light = new ƒ.LightPoint(ƒ.Color.CSS("white"));
       let cmpLight: ƒ.ComponentLight = new ƒ.ComponentLight(light);
       this.lightNode.addComponent(cmpLight);
-      this.lightNode.mtxLocal.scale(ƒ.Vector3.ONE(20));
-      this.appendChild(this.lightNode);
+      this.lightNode.mtxLocal.scale(ƒ.Vector3.ONE(8));
+      // this.appendChild(this.lightNode);
 
       this.hitTimeout = { timeoutID: 0, duration: 0 };
+      this.initializeAnimations();
 
     }
 
@@ -157,7 +154,7 @@ namespace Script {
 
     }
 
-    public async initializeAnimations(): Promise<void> {
+    protected async initializeAnimations(): Promise<void> {
       let rectangles: Rectangles = {
         "rightIdle": [0, 0, 32, 32], "right": [32, 0, 32, 32], "rightUp": [64, 0, 32, 32],
         "leftIdle": [0, 32, 32, 32], "left": [32, 32, 32, 32], "leftUp": [64, 32, 32, 32]

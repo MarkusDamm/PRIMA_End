@@ -42,6 +42,7 @@ namespace Script {
       lightNode.mtxLocal.scale(ƒ.Vector3.ONE(5));
       this.appendChild(lightNode);
 
+      this.initializeAnimations();
     }
 
     private adjustSprite(_direction: ƒ.Vector2): void {
@@ -126,7 +127,7 @@ namespace Script {
     //   }
     // }
 
-    public async initializeAnimations(): Promise<void> {
+    protected async initializeAnimations(): Promise<void> {
       let rectangles: Rectangles = { "idle": [0, 0, 16, 16] };
       await super.initializeAnimations(this.textureSrc, rectangles, 1, this.resolution);
 

@@ -34,6 +34,7 @@ namespace Script {
           break;
       }
       let UI: HTMLElement = document.querySelector("div#vui");
+      UI.hidden = false;
       console.log("connect GUI");
 
       new ƒUI.Controller(this, UI);

@@ -63,7 +63,7 @@ declare namespace Script {
          * @param _frames frames of the animation
          * @param _offsetX offset to next frame
          */
-        initializeAnimations(_textureSrc: string, _rectangles: Rectangles, _frames: number, _offsetX: number): Promise<void>;
+        protected initializeAnimations(_textureSrc: string, _rectangles: Rectangles, _frames: number, _offsetX: number): Promise<void>;
         /**
         * initializes multiple animation with the same amount of frames
         */
@@ -72,44 +72,71 @@ declare namespace Script {
 }
 declare namespace Script {
     import ƒ = FudgeCore;
+    enum Affinity {
+        Flame = 0,
+        Enemy = 1
+    }
+    enum State {
+        Hidden = 0,
+        Idle = 1,
+        Move = 2,
+        Attack = 3,
+        Die = 4,
+        Hurt = 5
+    }
+    let camNode: ƒ.Node;
+    let flame: Flame;
+    let entities: Entity[];
+    let projectiles: Projectile[];
+    let config: any;
+    function hdlCreation(_creation: Projectile | Entity, _array: any[]): void;
+    function hdlDestruction(_creation: Projectile | Octo, _array: any[]): void;
+    /**
+     * get the amount (Betrag) of a number
+     */
+    function getAmount(_number: number): number;
+}
+declare namespace Script {
+    import ƒ = FudgeCore;
     abstract class Entity extends TexturedMoveable {
         protected hiddenTextureSrc: string;
+        protected data: any;
         protected health: number;
         power: number;
         protected state: State;
         protected hasIFrames: boolean;
+        protected velocity: ƒ.Vector2;
         readonly affinity: Affinity;
+        protected animations: ƒAid.SpriteSheetAnimations;
         /**
          * Create an character (Node) and add an transform-component
          */
-        constructor(_name: string, _spriteName: string, _spriteDimensions: ƒ.Vector2);
-        abstract attack(_event?: Event | KeyboardEvent): void;
-        abstract die(): void;
-        abstract unveil(): void;
+        constructor(_data: any);
+        protected abstract attack(_event?: Event | KeyboardEvent): void;
+        protected abstract die(): void;
+        protected abstract unveil(): void;
         takeDamage(_event: CustomEvent): void;
     }
 }
 declare namespace Script {
-    import ƒAid = FudgeAid;
+    import ƒ = FudgeCore;
     interface Timeout {
         timeoutID: number;
         duration: number;
     }
     class Flame extends Entity {
-        protected textureSrc: string;
-        protected animations: ƒAid.SpriteSheetAnimations;
         private fireballTextureSrc;
         readonly affinity = Affinity.Flame;
+        protected velocity: ƒ.Vector2;
         /**
          * saves the id from the last started timeout related to taking damage as well as the remaining duration
          */
         private hitTimeout;
         private attackCooldown;
         private isAttackAvailable;
-        private velocity;
         private gui;
         private lightNode;
-        constructor();
+        constructor(_data: any);
         get getSpeed(): number;
         attack: (_event: KeyboardEvent) => void;
         protected move(): void;
@@ -117,7 +144,7 @@ declare namespace Script {
         takeDamage(_event: CustomEvent): void;
         private startIFrames;
         update(): void;
-        initializeAnimations(): Promise<void>;
+        protected initializeAnimations(): Promise<void>;
         /**
          * adjusts the animation to the given _state
          * @param _state current Frame
@@ -174,49 +201,35 @@ declare namespace Script {
     export {};
 }
 declare namespace Script {
-    import ƒ = FudgeCore;
-    enum Affinity {
-        Flame = 0,
-        Enemy = 1
-    }
-    enum State {
-        Idle = 0,
-        Move = 1,
-        Attack = 2,
-        Die = 3,
-        Hurt = 4
-    }
-    let camNode: ƒ.Node;
-    let flame: Flame;
-    let entities: Entity[];
-    let projectiles: Projectile[];
-    let config: any;
-    function hdlCreation(_creation: Projectile | Octo, _array: any[]): void;
-    function hdlDestruction(_creation: Projectile | Octo, _array: any[]): void;
-    /**
-     * get the amount (Betrag) of a number
-     */
-    function getAmount(_number: number): number;
-}
-declare namespace Script {
-    import ƒAid = FudgeAid;
-    class Octo extends Entity {
-        protected textureSrc: string;
-        protected animations: ƒAid.SpriteSheetAnimations;
+    class Goriya extends Entity {
         readonly affinity = Affinity.Enemy;
         protected hasIFrames: boolean;
         protected health: number;
         private target;
+        constructor(_spawnPosition: ƒ.Vector3, _data: any);
+        protected attack(_event?: Event | KeyboardEvent): void;
+        protected die(): void;
+        protected unveil(): void;
+        update(_deltaTime: number): void;
+        protected initializeAnimations(): Promise<void>;
+        protected move(_deltaTime: number): void;
+    }
+}
+declare namespace Script {
+    class Octo extends Entity {
+        readonly affinity = Affinity.Enemy;
+        protected hasIFrames: boolean;
+        private target;
         private targetUpdateTimeout;
-        constructor(_spawnPosition: ƒ.Vector3);
+        constructor(_spawnPosition: ƒ.Vector3, _data: any);
         protected move(_deltaTime: number): void;
         private updateTarget;
         attack(): void;
         takeDamage(_event: CustomEvent): void;
         die(): void;
         update(_deltaTime: number): void;
-        initializeAnimations(): Promise<void>;
-        unveil: () => void;
+        protected initializeAnimations(): Promise<void>;
+        protected unveil: () => void;
     }
 }
 declare namespace Script {
@@ -238,6 +251,6 @@ declare namespace Script {
         update(_deltaTime: number): void;
         protected move(_deltaTime: number): void;
         private checkForCollision;
-        initializeAnimations(): Promise<void>;
+        protected initializeAnimations(): Promise<void>;
     }
 }
