@@ -11,15 +11,6 @@ namespace Script {
     public health: number;
     public enemyCounter: number;
 
-    // public constructor(_value: number) {
-    //   super();
-    //   this.health = _value;
-    //   let healthUI: HTMLElement = document.querySelector("div#vui");
-    //   console.log("connect GUI");
-
-    //   new ƒUI.Controller(this, healthUI);
-    // }
-
     public constructor(_type: GUIType, _value: number) {
       super();
       switch (_type) {
@@ -45,8 +36,6 @@ namespace Script {
     /**
      * updateUI
      */
-    public updateUI() {
-
-    }
+    // public updateUI() { }
   }
 }

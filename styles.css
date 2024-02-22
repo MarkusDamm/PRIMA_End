@@ -16,12 +16,23 @@ canvas.fullscreen {
   height: 100vh;
 }
 
+#notification {
+  position: absolute;
+  top: 10%;
+  width: 100%;
+  text-align: center;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  font-stretch: extra-expanded;
+  color: white;
+}
+
 #vui {
   position: absolute;
   top: 50px;
   left: 50px;
   font-size: 2rem;
   color: crimson;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
 }
 
 #vui>input[type=range]:disabled {

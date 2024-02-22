@@ -163,12 +163,11 @@ var Script;
     })(State = Script.State || (Script.State = {}));
     ;
     // from config
-    let stageDimension;
+    let arenaDimension;
     let floorTileSrc;
     // global variables
     let viewport;
     let branch;
-    let counterGUI;
     let gameStateMachine;
     Script.entities = [];
     Script.projectiles = [];
@@ -192,8 +191,8 @@ var Script;
         ƒ.Debug.log("Project:", ƒ.Project.resources);
         Script.config = await (await fetch("./config.json")).json();
         console.log(Script.config.control);
-        stageDimension = new ƒ.Vector2(Script.config.stage.dimensionX, Script.config.stage.dimensionY);
-        floorTileSrc = Script.config.stage.floorTextureSource;
+        arenaDimension = new ƒ.Vector2(Script.config.arena.dimensionX, Script.config.arena.dimensionY);
+        floorTileSrc = Script.config.arena.floorTextureSource;
         // get the graph to show from loaded resources
         let graph = ƒ.Project.resources[_graphId];
         ƒ.Debug.log("Graph:", graph);
@@ -228,7 +227,6 @@ var Script;
         canvas.dispatchEvent(new CustomEvent("interactiveViewportStarted", { bubbles: true, detail: viewport }));
     }
     async function start(_event) {
-        document.dispatchEvent(new CustomEvent("startedPrototype", { bubbles: true, detail: viewport }));
         let floorTexture = new ƒ.TextureImage();
         await floorTexture.load(floorTileSrc);
         setUpFloor(floorTexture);
@@ -238,27 +236,24 @@ var Script;
         branch.appendChild(Script.flame);
         // characters.push(flame);
         gameStateMachine = Script.GameStateMachine.getInstance();
-        console.log("GameStateMachine: ", gameStateMachine);
+        gameStateMachine.transit(Script.GameState.Start);
         document.addEventListener("keydown", Script.flame.attack);
-        //can be put in Config
-        addEnemy(await Script.config.stages.s01.enemyCount);
-        console.warn("EnemyCount for stage 1: " + Script.config.stages.s01.enemyCount);
-        counterGUI = new Script.GUI(Script.GUIType.EnemyCount, Script.config.stages.s01.enemyCount);
         ƒ.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, update);
         ƒ.Loop.start(); // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
+        document.dispatchEvent(new CustomEvent("startedPrototype", { bubbles: true, detail: viewport }));
     }
     function addEnemy(_amount) {
         for (let index = 0; index < _amount; index++) {
             let randomX;
             if (Math.random() - 0.5 < 0)
-                randomX = randomNumber(-stageDimension.x / 2, -stageDimension.x / 4);
+                randomX = randomNumber(-arenaDimension.x / 2, -arenaDimension.x / 4);
             else
-                randomX = randomNumber(stageDimension.x / 4, stageDimension.x / 2);
+                randomX = randomNumber(arenaDimension.x / 4, arenaDimension.x / 2);
             let randomY;
             if (Math.random() - 0.5 < 0)
-                randomY = randomNumber(-stageDimension.y / 2, -stageDimension.y / 4);
+                randomY = randomNumber(-arenaDimension.y / 2, -arenaDimension.y / 4);
             else
-                randomY = randomNumber(stageDimension.y / 4, stageDimension.y / 2);
+                randomY = randomNumber(arenaDimension.y / 4, arenaDimension.y / 2);
             let randomPos = new ƒ.Vector3(randomX, randomY);
             let enemy;
             if (index % 2 == 0) {
@@ -274,6 +269,7 @@ var Script;
             // characters.push(enemy);
         }
     }
+    Script.addEnemy = addEnemy;
     function randomNumber(_lowEnd, _highEnd) {
         let randomNumber = Math.floor(Math.random() * (_highEnd - _lowEnd));
         randomNumber += _lowEnd;
@@ -292,7 +288,6 @@ var Script;
             projectile.update(deltaTime);
         }
         checkHitbox();
-        // gameStateMachine.update();
         // counterGUI.enemyCounter = entities.length;
         // ƒ.Physics.simulate();  // if physics is included and used
         viewport.draw();
@@ -313,11 +308,11 @@ var Script;
             }
         }
     }
-    function checkDistance(_current, _target) {
-        let posDifference = ƒ.Vector3.DIFFERENCE(_target.mtxLocal.translation, _current.mtxLocal.translation);
-        posDifference = posDifference.toVector2();
-        return posDifference.magnitude;
-    }
+    // function checkDistance(_current: Entity, _target: Entity): number {
+    //   let posDifference: ƒ.Vector3 | ƒ.Vector2 = ƒ.Vector3.DIFFERENCE(_target.mtxLocal.translation, _current.mtxLocal.translation);
+    //   posDifference = posDifference.toVector2();
+    //   return posDifference.magnitude;
+    // }
     function stopLoop(_event) {
         if (_event.key == "p") {
             console.log("P pressed for pause, press o to continue");
@@ -342,19 +337,22 @@ var Script;
                 console.log(_array);
             }
         }
-        counterGUI.enemyCounter = Script.entities.length;
+        Script.counterGUI.enemyCounter = Script.entities.length;
+        if (Script.counterGUI.enemyCounter == 0) {
+            gameStateMachine.transit(Script.GameState.NextStage);
+        }
     }
     Script.hdlDestruction = hdlDestruction;
     /**
      * set up the floor-tiles with a given texture for the whole stage
      */
     function setUpFloor(_texture) {
-        // append one tile with phong shader
+        // create one big tile with phong shader
         let floorTile = new ƒ.Node("Tile");
         floorTile.addComponent(new ƒ.ComponentTransform);
         floorTile.mtxLocal.translateZ(-1);
-        floorTile.mtxLocal.scaleX(stageDimension.x);
-        floorTile.mtxLocal.scaleY(stageDimension.y);
+        floorTile.mtxLocal.scaleX(arenaDimension.x);
+        floorTile.mtxLocal.scaleY(arenaDimension.y);
         // add SpriteMesh
         let cmpMesh = new ƒ.ComponentMesh(new ƒ.MeshSprite("TileSprite"));
         floorTile.addComponent(cmpMesh);
@@ -363,8 +361,8 @@ var Script;
         let mat = new ƒ.Material("TileMaterial", ƒ.ShaderPhongTextured, coat);
         // error with material
         let cmpMat = new ƒ.ComponentMaterial(mat);
-        cmpMat.mtxPivot.scaleX(stageDimension.x / 2);
-        cmpMat.mtxPivot.scaleY(stageDimension.y / 2);
+        cmpMat.mtxPivot.scaleX(arenaDimension.x / 2);
+        cmpMat.mtxPivot.scaleY(arenaDimension.y / 2);
         floorTile.addComponent(cmpMat);
         // append tile to parent
         branch.appendChild(floorTile);
@@ -494,6 +492,9 @@ var Script;
         }
         die() {
             console.log("You Died!");
+            Script.GameStateMachine.getInstance().transit(Script.GameState.Defeat);
+            this.removeEventListener("Damage", this.takeDamage);
+            // this.activate(false);
         }
         takeDamage(_event) {
             super.takeDamage(_event);
@@ -579,12 +580,13 @@ var Script;
                     break;
             }
         }
-        changeAttributes(_speedDifference, _healthDifference, _powerDifference, _cooldownDifference) {
-            this.speed += _speedDifference;
-            this.health += _healthDifference;
-            this.power += _powerDifference;
-            this.attackCooldown += _cooldownDifference;
-        }
+        // For Power Ups
+        // private changeAttributes(_speedDifference: number, _healthDifference: number, _powerDifference: number, _cooldownDifference: number): void {
+        //   this.speed += _speedDifference;
+        //   this.health += _healthDifference;
+        //   this.power += _powerDifference;
+        //   this.attackCooldown += _cooldownDifference;
+        // }
         unveil() {
             // propably useless here
         }
@@ -602,13 +604,6 @@ var Script;
     })(GUIType = Script.GUIType || (Script.GUIType = {}));
     ;
     class GUI extends ƒ.Mutable {
-        // public constructor(_value: number) {
-        //   super();
-        //   this.health = _value;
-        //   let healthUI: HTMLElement = document.querySelector("div#vui");
-        //   console.log("connect GUI");
-        //   new ƒUI.Controller(this, healthUI);
-        // }
         constructor(_type, _value) {
             super();
             switch (_type) {
@@ -627,11 +622,6 @@ var Script;
             new ƒUI.Controller(this, UI);
         }
         reduceMutator(_mutator) { }
-        /**
-         * updateUI
-         */
-        updateUI() {
-        }
     }
     Script.GUI = GUI;
 })(Script || (Script = {}));
@@ -641,17 +631,22 @@ var Script;
     var ƒAid = FudgeAid;
     let GameState;
     (function (GameState) {
-        GameState[GameState["Start"] = 0] = "Start";
-        GameState[GameState["Running"] = 1] = "Running";
-        GameState[GameState["Victory"] = 2] = "Victory";
-        GameState[GameState["Defeat"] = 3] = "Defeat";
-    })(GameState || (GameState = {}));
+        GameState[GameState["Wait"] = 0] = "Wait";
+        GameState[GameState["Start"] = 1] = "Start";
+        GameState[GameState["NextStage"] = 2] = "NextStage";
+        GameState[GameState["Victory"] = 3] = "Victory";
+        GameState[GameState["Defeat"] = 4] = "Defeat";
+    })(GameState = Script.GameState || (Script.GameState = {}));
     ;
     class GameStateMachine extends ƒAid.StateMachine {
         constructor() {
             super();
             this.update = (_event) => { this.act(); };
             this.instructions = GameStateMachine.instructions;
+            this.stages = Script.config.stages;
+            this.currentStage = this.frameCounter = 0;
+            console.log("Stages and Current Stage");
+            console.log(this.stages, this.stages[this.currentStage]);
             // Don't start when running in editor
             if (ƒ.Project.mode == ƒ.MODE.EDITOR)
                 return;
@@ -675,7 +670,10 @@ var Script;
             setup.actDefault = GameStateMachine.actDefault;
             setup.setAction(GameState.Start, this.actStart);
             // setup.setAction(GameState.Running, <ƒ.General>this.actRunning);
-            setup.setTransition(GameState.Start, GameState.Running, GameStateMachine.transitState);
+            setup.setAction(GameState.NextStage, this.actNextStage);
+            setup.setAction(GameState.Victory, this.actVictory);
+            setup.setAction(GameState.Defeat, this.actDefeat);
+            setup.setTransition(GameState.Wait, GameState.NextStage, GameStateMachine.transitNextStage);
             return setup;
         }
         static transitDefault(_machine) {
@@ -684,19 +682,65 @@ var Script;
         }
         static actDefault(_machine) {
             //not needed?
-            console.log("default action");
+            console.log("default action", _machine.stateCurrent);
         }
         static actStart(_machine) {
             //spawn enemies
-            console.log("start action");
+            Script.addEnemy(_machine.stages[_machine.currentStage].enemyCount);
+            console.warn("EnemyCount for stage " + _machine.currentStage + 1 + " : " + _machine.stages[_machine.currentStage].enemyCount);
+            Script.counterGUI = new Script.GUI(Script.GUIType.EnemyCount, _machine.stages[_machine.currentStage].enemyCount);
+            console.log("Gamestate", _machine.stateCurrent, "Action");
+            _machine.transit(GameState.Wait);
         }
-        static actRunning(_machine) {
-            //not needed?
-            console.log("running action");
+        // private static actRunning(_machine: GameStateMachine) {
+        //   //not needed?
+        //   console.log("running action");
+        // }
+        static transitNextStage(_machine) {
+            console.log("GameState Transition from Wait to Next Stage");
+            console.log(_machine.stages, _machine.stages.length);
+            // if (_machine.stages.length < _machine.currentStage + 1) {
+            if (_machine.stages[_machine.currentStage + 1]) {
+                _machine.currentStage++;
+                _machine.frameCounter = 0;
+                let notification = document.querySelector("div#notification");
+                notification.hidden = false;
+                Script.addEnemy(_machine.stages[_machine.currentStage].enemyCount);
+                console.warn("EnemyCount for stage " + _machine.currentStage + 1 + " : " + _machine.stages[_machine.currentStage].enemyCount);
+                Script.counterGUI.enemyCounter = _machine.stages[_machine.currentStage].enemyCount;
+            }
+            else {
+                _machine.frameCounter = -100;
+                _machine.transit(GameState.Victory);
+            }
         }
-        static transitState(_machine) {
-            //not needed?
-            console.log("state transition");
+        static actNextStage(_machine) {
+            if (_machine.frameCounter < 0) {
+                _machine.transit(GameState.Victory);
+                return;
+            }
+            _machine.frameCounter++;
+            if (_machine.frameCounter > 150) {
+                let notification = document.querySelector("div#notification");
+                notification.hidden = true;
+                _machine.transit(GameState.Wait);
+            }
+        }
+        static actVictory(_machine) {
+            console.log("Action", _machine.stateCurrent);
+            let notification = document.querySelector("div#notification");
+            notification.querySelector("h1").innerText = "Your Flame never fades!!  Congratulations, you cleared all stages!";
+            notification.hidden = false;
+            // Why doesn't it stop?
+            ƒ.Loop.stop();
+        }
+        static actDefeat(_machine) {
+            console.log("Action", _machine.stateCurrent);
+            let notification = document.querySelector("div#notification");
+            notification.querySelector("h1").innerText = "Your Flame got extinguished! Try again.";
+            notification.hidden = false;
+            // WHY DOESN'T IT STOOOOOOOOPPP????
+            ƒ.Loop.stop();
         }
     }
     GameStateMachine.instructions = GameStateMachine.getInstructions();
@@ -708,6 +752,9 @@ var Script;
 ///<reference path="./Entity.ts"/>
 ///<reference path="./Main.ts"/>
 (function (Script) {
+    // enum Direction {
+    //   Up, Right, Down, Left
+    // };
     class Goriya extends Script.Entity {
         // private targetUpdateTimeout: Timeout;
         constructor(_spawnPosition, _data) {
@@ -722,17 +769,41 @@ var Script;
             this.addEventListener("enemyIsClose", this.unveil.bind(this));
             this.mtxLocal.translate(_spawnPosition);
             this.target = Script.flame.mtxLocal.translation.toVector2();
+            this.isUnveiled = false;
             this.initializeAnimations();
         }
         attack(_event) {
         }
         die() {
+            Script.hdlDestruction(this, Script.entities);
         }
         unveil() {
             this.removeEventListener("enemyIsClose", this.unveil);
+            this.isUnveiled = true;
+            this.spriteNode.setAnimation(this.animations.side);
         }
         update(_deltaTime) {
             this.move(_deltaTime);
+            if (this.isUnveiled) {
+                if (this.velocity.y > 0 && this.velocity.y > Script.getAmount(this.velocity.x)) {
+                    // move up
+                    this.spriteNode.setAnimation(this.animations.up);
+                }
+                else if (this.velocity.y <= 0 && Script.getAmount(this.velocity.y) > Script.getAmount(this.velocity.x)) {
+                    // move down
+                    this.spriteNode.setAnimation(this.animations.down);
+                }
+                else if (this.velocity.x < 0) {
+                    // move left
+                    this.spriteNode.setAnimation(this.animations.side);
+                    // turn sprite
+                    this.spriteNode.mtxLocal.rotation = ƒ.Vector3.Y(180);
+                }
+                else {
+                    // move right
+                    this.spriteNode.setAnimation(this.animations.side);
+                }
+            }
         }
         async initializeAnimations() {
             let rectangles = { "hidden": [0, 0, 22, 25] };
@@ -877,8 +948,8 @@ var Script;
             distance.scale(_deltaTime);
             this.mtxLocal.translate(distance);
             let pos = this.mtxLocal.translation;
-            if (pos.x > Script.config.stage.dimensionX / 2 || pos.x < -Script.config.stage.dimensionX / 2 ||
-                pos.y > Script.config.stage.dimensionY / 2 || pos.y < -Script.config.stage.dimensionY / 2) {
+            if (pos.x > Script.config.arena.dimensionX / 2 || pos.x < -Script.config.arena.dimensionX / 2 ||
+                pos.y > Script.config.arena.dimensionY / 2 || pos.y < -Script.config.arena.dimensionY / 2) {
                 this.state = Script.State.Die;
                 Script.hdlDestruction(this, Script.projectiles);
             }

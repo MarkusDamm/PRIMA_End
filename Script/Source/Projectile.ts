@@ -53,7 +53,6 @@ namespace Script {
         this.spriteNode.mtxLocal.rotateZ(90);
       else if (_direction.y == -1)  // Down
         this.spriteNode.mtxLocal.rotateZ(270);
-
     }
 
     public update(_deltaTime: number): void {
@@ -70,8 +69,8 @@ namespace Script {
       this.mtxLocal.translate(distance);
 
       let pos: ƒ.Vector3 = this.mtxLocal.translation;
-      if (pos.x > config.stage.dimensionX / 2 || pos.x < -config.stage.dimensionX / 2 ||
-        pos.y > config.stage.dimensionY / 2 || pos.y < -config.stage.dimensionY / 2) {
+      if (pos.x > config.arena.dimensionX / 2 || pos.x < -config.arena.dimensionX / 2 ||
+        pos.y > config.arena.dimensionY / 2 || pos.y < -config.arena.dimensionY / 2) {
         this.state = State.Die;
         hdlDestruction(this, projectiles);
       }

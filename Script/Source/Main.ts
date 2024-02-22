@@ -10,14 +10,14 @@ namespace Script {
   };
 
   // from config
-  let stageDimension: ƒ.Vector2;
+  let arenaDimension: ƒ.Vector2;
   let floorTileSrc: string;
 
   // global variables
   let viewport: ƒ.Viewport;
   let branch: ƒ.Node;
-  let counterGUI: GUI;
   let gameStateMachine: GameStateMachine;
+  export let counterGUI: GUI;
   export let camNode: ƒ.Node;
   export let flame: Flame;
   export let entities: Entity[] = [];
@@ -49,8 +49,8 @@ namespace Script {
 
     config = await (await fetch("./config.json")).json();
     console.log(config.control);
-    stageDimension = new ƒ.Vector2(config.stage.dimensionX, config.stage.dimensionY);
-    floorTileSrc = config.stage.floorTextureSource;
+    arenaDimension = new ƒ.Vector2(config.arena.dimensionX, config.arena.dimensionY);
+    floorTileSrc = config.arena.floorTextureSource;
 
     // get the graph to show from loaded resources
     let graph: ƒ.Graph = <ƒ.Graph>ƒ.Project.resources[_graphId];
@@ -94,8 +94,6 @@ namespace Script {
   }
 
   async function start(_event: CustomEvent): Promise<void> {
-    document.dispatchEvent(new CustomEvent("startedPrototype", { bubbles: true, detail: viewport }))
-
     let floorTexture: ƒ.TextureImage = new ƒ.TextureImage();
     await floorTexture.load(floorTileSrc);
     setUpFloor(floorTexture);
@@ -107,29 +105,25 @@ namespace Script {
     // characters.push(flame);
 
     gameStateMachine = GameStateMachine.getInstance();
-    console.log("GameStateMachine: ", gameStateMachine);
+    gameStateMachine.transit(GameState.Start);
 
     document.addEventListener("keydown", flame.attack);
-
-    //can be put in Config
-    addEnemy(await config.stages.s01.enemyCount);
-    console.warn("EnemyCount for stage 1: " + config.stages.s01.enemyCount);
-    counterGUI = new GUI(GUIType.EnemyCount, config.stages.s01.enemyCount);
-
     ƒ.Loop.addEventListener(ƒ.EVENT.LOOP_FRAME, update);
 
     ƒ.Loop.start();  // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
+
+    document.dispatchEvent(new CustomEvent("startedPrototype", { bubbles: true, detail: viewport }))
   }
 
-  function addEnemy(_amount: number): void {
+  export function addEnemy(_amount: number): void {
     for (let index: number = 0; index < _amount; index++) {
       let randomX: number;
-      if (Math.random() - 0.5 < 0) randomX = randomNumber(-stageDimension.x / 2, -stageDimension.x / 4);
-      else randomX = randomNumber(stageDimension.x / 4, stageDimension.x / 2);
+      if (Math.random() - 0.5 < 0) randomX = randomNumber(-arenaDimension.x / 2, -arenaDimension.x / 4);
+      else randomX = randomNumber(arenaDimension.x / 4, arenaDimension.x / 2);
 
       let randomY: number;
-      if (Math.random() - 0.5 < 0) randomY = randomNumber(-stageDimension.y / 2, -stageDimension.y / 4);
-      else randomY = randomNumber(stageDimension.y / 4, stageDimension.y / 2);
+      if (Math.random() - 0.5 < 0) randomY = randomNumber(-arenaDimension.y / 2, -arenaDimension.y / 4);
+      else randomY = randomNumber(arenaDimension.y / 4, arenaDimension.y / 2);
 
       let randomPos: ƒ.Vector3 = new ƒ.Vector3(randomX, randomY);
 
@@ -169,7 +163,6 @@ namespace Script {
     }
 
     checkHitbox();
-    // gameStateMachine.update();
 
     // counterGUI.enemyCounter = entities.length;
     // ƒ.Physics.simulate();  // if physics is included and used
@@ -194,11 +187,11 @@ namespace Script {
     }
   }
 
-  function checkDistance(_current: Entity, _target: Entity): number {
-    let posDifference: ƒ.Vector3 | ƒ.Vector2 = ƒ.Vector3.DIFFERENCE(_target.mtxLocal.translation, _current.mtxLocal.translation);
-    posDifference = posDifference.toVector2();
-    return posDifference.magnitude;
-  }
+  // function checkDistance(_current: Entity, _target: Entity): number {
+  //   let posDifference: ƒ.Vector3 | ƒ.Vector2 = ƒ.Vector3.DIFFERENCE(_target.mtxLocal.translation, _current.mtxLocal.translation);
+  //   posDifference = posDifference.toVector2();
+  //   return posDifference.magnitude;
+  // }
 
   function stopLoop(_event: KeyboardEvent): void {
     if (_event.key == "p") {
@@ -210,13 +203,13 @@ namespace Script {
     }
   }
 
-  export function hdlCreation(_creation: Projectile | Entity, _array: any[]): void {
+  export function hdlCreation(_creation: TexturedMoveable, _array: any[]): void {
     // _creation.initializeAnimations();
     branch.appendChild(_creation);
     _array.push(_creation);
   }
 
-  export function hdlDestruction(_creation: Projectile | Octo, _array: any[]): void {
+  export function hdlDestruction(_creation: TexturedMoveable, _array: any[]): void {
     branch.removeChild(_creation);
     for (let i = 0; i < _array.length; i++) {
       if (_creation == _array[i]) {
@@ -226,18 +219,21 @@ namespace Script {
       }
     }
     counterGUI.enemyCounter = entities.length;
+    if (counterGUI.enemyCounter == 0) {
+      gameStateMachine.transit(GameState.NextStage);
+    }
   }
 
   /**
    * set up the floor-tiles with a given texture for the whole stage
    */
   function setUpFloor(_texture: ƒ.Texture): void {
-    // append one tile with phong shader
+    // create one big tile with phong shader
     let floorTile: ƒ.Node = new ƒ.Node("Tile");
     floorTile.addComponent(new ƒ.ComponentTransform);
     floorTile.mtxLocal.translateZ(-1);
-    floorTile.mtxLocal.scaleX(stageDimension.x);
-    floorTile.mtxLocal.scaleY(stageDimension.y);
+    floorTile.mtxLocal.scaleX(arenaDimension.x);
+    floorTile.mtxLocal.scaleY(arenaDimension.y);
     // add SpriteMesh
     let cmpMesh: ƒ.ComponentMesh = new ƒ.ComponentMesh(new ƒ.MeshSprite("TileSprite"));
     floorTile.addComponent(cmpMesh);
@@ -246,12 +242,11 @@ namespace Script {
     let mat: ƒ.Material = new ƒ.Material("TileMaterial", ƒ.ShaderPhongTextured, coat);
     // error with material
     let cmpMat: ƒ.ComponentMaterial = new ƒ.ComponentMaterial(mat);
-    cmpMat.mtxPivot.scaleX(stageDimension.x / 2);
-    cmpMat.mtxPivot.scaleY(stageDimension.y / 2);
+    cmpMat.mtxPivot.scaleX(arenaDimension.x / 2);
+    cmpMat.mtxPivot.scaleY(arenaDimension.y / 2);
     floorTile.addComponent(cmpMat);
     // append tile to parent
     branch.appendChild(floorTile);
-
   }
 
   /**

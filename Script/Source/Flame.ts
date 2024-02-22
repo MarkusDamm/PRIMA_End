@@ -94,6 +94,9 @@ namespace Script {
 
     die(): void {
       console.log("You Died!");
+      GameStateMachine.getInstance().transit(GameState.Defeat);
+      this.removeEventListener("Damage", this.takeDamage);
+      // this.activate(false);
     }
 
     public takeDamage(_event: CustomEvent): void {
@@ -102,7 +105,6 @@ namespace Script {
       console.log("Flame takes damage");
 
       if (!this.hasIFrames) {
-
         this.startIFrames(_event.detail._sourcePower * 1000);
       }
     }
@@ -146,12 +148,10 @@ namespace Script {
             this.chooseAnimation(Frames.Left);
         }
       }
-
       this.hitTimeout.duration--;
       if (this.hitTimeout.duration < 0) {
         this.hitTimeout = { timeoutID: 0, duration: 0 };
       }
-
     }
 
     protected async initializeAnimations(): Promise<void> {
@@ -162,9 +162,7 @@ namespace Script {
       super.initializeAnimations(this.textureSrc, rectangles, 1, 32);
 
       this.chooseAnimation(Frames.RightIdle);
-
     }
-
 
     /**
      * adjusts the animation to the given _state
@@ -196,12 +194,13 @@ namespace Script {
       }
     }
 
-    private changeAttributes(_speedDifference: number, _healthDifference: number, _powerDifference: number, _cooldownDifference: number): void {
-      this.speed += _speedDifference;
-      this.health += _healthDifference;
-      this.power += _powerDifference;
-      this.attackCooldown += _cooldownDifference;
-    }
+    // For Power Ups
+    // private changeAttributes(_speedDifference: number, _healthDifference: number, _powerDifference: number, _cooldownDifference: number): void {
+    //   this.speed += _speedDifference;
+    //   this.health += _healthDifference;
+    //   this.power += _powerDifference;
+    //   this.attackCooldown += _cooldownDifference;
+    // }
 
     unveil(): void {
       // propably useless here

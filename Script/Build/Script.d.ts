@@ -84,13 +84,15 @@ declare namespace Script {
         Die = 4,
         Hurt = 5
     }
+    let counterGUI: GUI;
     let camNode: ƒ.Node;
     let flame: Flame;
     let entities: Entity[];
     let projectiles: Projectile[];
     let config: any;
-    function hdlCreation(_creation: Projectile | Entity, _array: any[]): void;
-    function hdlDestruction(_creation: Projectile | Octo, _array: any[]): void;
+    function addEnemy(_amount: number): void;
+    function hdlCreation(_creation: TexturedMoveable, _array: any[]): void;
+    function hdlDestruction(_creation: TexturedMoveable, _array: any[]): void;
     /**
      * get the amount (Betrag) of a number
      */
@@ -150,7 +152,6 @@ declare namespace Script {
          * @param _state current Frame
          */
         private chooseAnimation;
-        private changeAttributes;
         unveil(): void;
     }
 }
@@ -165,23 +166,23 @@ declare namespace Script {
         enemyCounter: number;
         constructor(_type: GUIType, _value: number);
         protected reduceMutator(_mutator: ƒ.Mutator): void;
-        /**
-         * updateUI
-         */
-        updateUI(): void;
     }
 }
 declare namespace Script {
     import ƒAid = FudgeAid;
     enum GameState {
-        Start = 0,
-        Running = 1,
-        Victory = 2,
-        Defeat = 3
+        Wait = 0,
+        Start = 1,
+        NextStage = 2,
+        Victory = 3,
+        Defeat = 4
     }
-    export class GameStateMachine extends ƒAid.StateMachine<GameState> {
+    class GameStateMachine extends ƒAid.StateMachine<GameState> {
         private static instance;
         private static instructions;
+        private stages;
+        private currentStage;
+        private frameCounter;
         constructor();
         /**
          * accsess the instance of GameStateMachine
@@ -194,11 +195,12 @@ declare namespace Script {
         private static transitDefault;
         private static actDefault;
         private static actStart;
-        private static actRunning;
-        private static transitState;
+        private static transitNextStage;
+        private static actNextStage;
+        private static actVictory;
+        private static actDefeat;
         private update;
     }
-    export {};
 }
 declare namespace Script {
     class Goriya extends Entity {
@@ -206,9 +208,10 @@ declare namespace Script {
         protected hasIFrames: boolean;
         protected health: number;
         private target;
+        private isUnveiled;
         constructor(_spawnPosition: ƒ.Vector3, _data: any);
         protected attack(_event?: Event | KeyboardEvent): void;
-        protected die(): void;
+        die(): void;
         protected unveil(): void;
         update(_deltaTime: number): void;
         protected initializeAnimations(): Promise<void>;
