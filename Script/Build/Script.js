@@ -251,16 +251,16 @@ var Script;
                 randomX = randomNumber(arenaDimension.x / 4, arenaDimension.x / 2);
             let randomY;
             if (Math.random() - 0.5 < 0)
-                randomY = randomNumber(-arenaDimension.y / 2, -arenaDimension.y / 4);
+                randomY = randomNumber(-arenaDimension.y / 2, -arenaDimension.y / 7);
             else
-                randomY = randomNumber(arenaDimension.y / 4, arenaDimension.y / 2);
+                randomY = randomNumber(arenaDimension.y / 7, arenaDimension.y / 2);
             let randomPos = new ƒ.Vector3(randomX, randomY);
             let enemy;
-            if (index % 2 == 0) {
-                enemy = new Script.Octo(randomPos, Script.config.enemies.octo);
+            if (index > 0 && index % 3 == 0) {
+                enemy = new Script.Goriya(randomPos, Script.config.enemies.goriya);
             }
             else {
-                enemy = new Script.Goriya(randomPos, Script.config.enemies.goriya);
+                enemy = new Script.Octo(randomPos, Script.config.enemies.octo);
             }
             // enemy.addEventListener("enemyIsClose", enemy.unveil);
             hdlCreation(enemy, Script.entities);
@@ -275,6 +275,7 @@ var Script;
         randomNumber += _lowEnd;
         return randomNumber;
     }
+    Script.randomNumber = randomNumber;
     function update(_event) {
         let deltaTime = ƒ.Loop.timeFrameGame / 1000;
         // update Control, which also moves the camera
@@ -864,7 +865,7 @@ var Script;
             ;
             this.targetUpdateTimeout.timeoutID = setTimeout(() => {
                 this.updateTarget();
-            }, 2500);
+            }, Script.randomNumber(500, 2500));
         }
         attack() {
         }

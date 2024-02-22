@@ -122,17 +122,17 @@ namespace Script {
       else randomX = randomNumber(arenaDimension.x / 4, arenaDimension.x / 2);
 
       let randomY: number;
-      if (Math.random() - 0.5 < 0) randomY = randomNumber(-arenaDimension.y / 2, -arenaDimension.y / 4);
-      else randomY = randomNumber(arenaDimension.y / 4, arenaDimension.y / 2);
+      if (Math.random() - 0.5 < 0) randomY = randomNumber(-arenaDimension.y / 2, -arenaDimension.y / 7);
+      else randomY = randomNumber(arenaDimension.y / 7, arenaDimension.y / 2);
 
       let randomPos: ƒ.Vector3 = new ƒ.Vector3(randomX, randomY);
 
       let enemy: Entity;
-      if (index % 2 == 0) {
-        enemy = new Octo(randomPos, config.enemies.octo);
+      if (index > 0 && index % 3 == 0) {
+        enemy = new Goriya(randomPos, config.enemies.goriya);
       }
       else {
-        enemy = new Goriya(randomPos, config.enemies.goriya);
+        enemy = new Octo(randomPos, config.enemies.octo);
       }
 
       // enemy.addEventListener("enemyIsClose", enemy.unveil);
@@ -143,7 +143,7 @@ namespace Script {
     }
   }
 
-  function randomNumber(_lowEnd: number, _highEnd: number): number {
+  export function randomNumber(_lowEnd: number, _highEnd: number): number {
     let randomNumber: number = Math.floor(Math.random() * (_highEnd - _lowEnd));
     randomNumber += _lowEnd;
     return randomNumber;

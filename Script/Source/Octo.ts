@@ -18,7 +18,7 @@ namespace Script {
       // console.log("Health: ", this.health, "; Power: ", this.power, " Speed: ", this.speed);
       this.addEventListener("Damage", this.takeDamage.bind(this));
       this.addEventListener("enemyIsClose", this.unveil.bind(this));
-      
+
       this.mtxLocal.translate(_spawnPosition);
       this.targetUpdateTimeout = { timeoutID: 0, duration: 0 };
       this.updateTarget();
@@ -39,7 +39,7 @@ namespace Script {
 
       this.targetUpdateTimeout.timeoutID = setTimeout(() => {
         this.updateTarget();
-      }, 2500);
+      }, randomNumber(500, 2500));
     }
 
     attack(): void {

@@ -91,6 +91,7 @@ declare namespace Script {
     let projectiles: Projectile[];
     let config: any;
     function addEnemy(_amount: number): void;
+    function randomNumber(_lowEnd: number, _highEnd: number): number;
     function hdlCreation(_creation: TexturedMoveable, _array: any[]): void;
     function hdlDestruction(_creation: TexturedMoveable, _array: any[]): void;
     /**
