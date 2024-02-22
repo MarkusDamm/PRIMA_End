@@ -3,6 +3,10 @@
 namespace Script {
   import ƒAid = FudgeAid;
 
+  // enum Direction {
+  //   Up, Right, Down, Left
+  // };
+
   export class Goriya extends Entity {
     // protected hiddenTextureSrc: string = "./Images/Goriya-Hidden22x25.png";
     // protected textureSrc: string = "./Images/Goriya22x25.png";
@@ -12,6 +16,7 @@ namespace Script {
     protected health: number = 10;
 
     private target: ƒ.Vector2;
+    private isUnveiled: boolean;
     // private targetUpdateTimeout: Timeout;
 
     constructor(_spawnPosition: ƒ.Vector3, _data: any) {
@@ -22,6 +27,7 @@ namespace Script {
 
       this.mtxLocal.translate(_spawnPosition);
       this.target = flame.mtxLocal.translation.toVector2();
+      this.isUnveiled = false;
 
       this.initializeAnimations();
     }
@@ -30,25 +36,48 @@ namespace Script {
 
     }
 
-    protected die(): void {
-
+    die(): void {
+      hdlDestruction(this, entities);
     }
 
     protected unveil(): void {
       this.removeEventListener("enemyIsClose", this.unveil);
+      this.isUnveiled = true;
+      this.spriteNode.setAnimation(<ƒAid.SpriteSheetAnimation>this.animations.side)
     }
 
     public update(_deltaTime: number): void {
       this.move(_deltaTime);
+
+      if (this.isUnveiled) {
+        if (this.velocity.y > 0 && this.velocity.y > getAmount(this.velocity.x)) {
+          // move up
+          this.spriteNode.setAnimation(<ƒAid.SpriteSheetAnimation>this.animations.up)
+        }
+        else if (this.velocity.y <= 0 && getAmount(this.velocity.y) > getAmount(this.velocity.x)) {
+          // move down
+          this.spriteNode.setAnimation(<ƒAid.SpriteSheetAnimation>this.animations.down)
+        }
+        else if (this.velocity.x < 0) {
+          // move left
+          this.spriteNode.setAnimation(<ƒAid.SpriteSheetAnimation>this.animations.side);
+          // turn sprite
+          this.spriteNode.mtxLocal.rotation = ƒ.Vector3.Y(180);
+        }
+        else {
+          // move right
+          this.spriteNode.setAnimation(<ƒAid.SpriteSheetAnimation>this.animations.side)
+        }
+      }
     }
 
     protected async initializeAnimations(): Promise<void> {
       let rectangles: Rectangles = { "hidden": [0, 0, 22, 25] };
       await super.initializeAnimations(this.hiddenTextureSrc, rectangles, 1, 22);
-      
+
       rectangles = { "down": [0, 0, 22, 25], "up": [0, 25, 22, 25] };
       await super.initializeAnimations(this.textureSrc, rectangles, 3, 22);
-      
+
       rectangles = { "side": [0, 50, 22, 25] };
       await super.initializeAnimations(this.textureSrc, rectangles, 2, 22);
 
