@@ -2,10 +2,10 @@
 namespace Script {
 
   export class Projectile extends TexturedMoveable {
-    protected textureSrc: string = "./Images/Fireball16x16.png";
     private soundSrc: string = "./Sounds/explosion.wav";
     private cmpAudio: ƒ.ComponentAudio;
-    static spriteDimensions: ƒ.Vector2 = new ƒ.Vector2(16, 16);
+    private spriteDimensions: ƒ.Vector2;
+    private frameCount: number;
     protected animations: ƒAid.SpriteSheetAnimations = {};
     private velocity: ƒ.Vector3;
     protected speed: number = 3;
@@ -13,8 +13,11 @@ namespace Script {
     private power: number;
     private state: State;
 
-    constructor(_position: ƒ.Vector3, _direction: ƒ.Vector2, _affinity: Affinity, _power: number, _spriteSource: string) {
-      super("Projectile", "ProjectileSprite", Projectile.spriteDimensions);
+    constructor(_position: ƒ.Vector3, _direction: ƒ.Vector2, _affinity: Affinity,
+      _power: number, _spriteSource: string = "./Images/Fireball16x16.png",
+      _spriteSize: ƒ.Vector2 = new ƒ.Vector2(16, 16), _frameCount: number = 1) {
+
+      super("Projectile", "ProjectileSprite", _spriteSize);
       this.mtxLocal.translate(_position);
 
       _direction.normalize(this.speed);
@@ -24,6 +27,8 @@ namespace Script {
 
       this.affinity = _affinity;
       this.textureSrc = _spriteSource;
+      this.spriteDimensions = _spriteSize;
+      this.frameCount = _frameCount;
       this.power = _power;
 
       // add Audio Source
@@ -77,26 +82,53 @@ namespace Script {
     }
 
     private checkForCollision(): void {
-      for (const entity of entities) {
-        if (this.affinity != entity.affinity) {
-          let posDifference: ƒ.Vector3 | ƒ.Vector2 = ƒ.Vector3.DIFFERENCE(this.mtxLocal.translation, entity.mtxLocal.translation);
-          posDifference = posDifference.toVector2();
-          if (posDifference.magnitude < 6) {
-            let dimensions: ƒ.Vector2 = ƒ.Vector2.SUM(this.hitbox, entity.hitbox);
-            posDifference = new ƒ.Vector2(getAmount(posDifference.x), getAmount(posDifference.y));
-            if (dimensions.x > posDifference.x && dimensions.y > posDifference.y) {
-              // character.takeDamage(character.power, character.mtxLocal.translation);
-              let damageEvent: Event = new CustomEvent("Damage", { bubbles: true, detail: { _sourcePower: this.power, _sourcePos: this.mtxLocal.translation } })
-              entity.dispatchEvent(damageEvent);
-              // play explosion
-              this.cmpAudio.play(true);
-              this.state = State.Die;
-              // then destroy projectile
-              setTimeout(() => {
-                hdlDestruction(this, projectiles);
-              }, 1000);
-            }
-          }
+
+      if (this.affinity == Affinity.Flame) {
+        for (const entity of entities) {
+          this.checkCollisionFor(entity);
+          // let posDifference: ƒ.Vector3 | ƒ.Vector2 = ƒ.Vector3.DIFFERENCE(this.mtxLocal.translation, entity.mtxLocal.translation);
+          // posDifference = posDifference.toVector2();
+          // if (posDifference.magnitude < 6) {
+          //   let dimensions: ƒ.Vector2 = ƒ.Vector2.SUM(this.hitbox, entity.hitbox);
+          //   posDifference = new ƒ.Vector2(getAmount(posDifference.x), getAmount(posDifference.y));
+          //   if (dimensions.x > posDifference.x && dimensions.y > posDifference.y) {
+          //     // character.takeDamage(character.power, character.mtxLocal.translation);
+          //     let damageEvent: Event = new CustomEvent("Damage", { bubbles: true, detail: { _sourcePower: this.power, _sourcePos: this.mtxLocal.translation } })
+          //     entity.dispatchEvent(damageEvent);
+          //     // play explosion
+          //     this.cmpAudio.play(true);
+          //     this.state = State.Die;
+          //     // then destroy projectile
+          //     setTimeout(() => {
+          //       hdlDestruction(this, projectiles);
+          //     }, 1000);
+          //   }
+          // }
+        }
+      }
+      else this.checkCollisionFor(flame);
+    }
+
+    private checkCollisionFor(_entity: Entity) {
+      let posDifference: ƒ.Vector3 | ƒ.Vector2 = ƒ.Vector3.DIFFERENCE(this.mtxLocal.translation, _entity.mtxLocal.translation);
+      posDifference = posDifference.toVector2();
+      if (posDifference.magnitude < 6) {
+        let dimensions: ƒ.Vector2 = ƒ.Vector2.SUM(this.hitbox, _entity.hitbox);
+        posDifference = new ƒ.Vector2(getAmount(posDifference.x), getAmount(posDifference.y));
+        if (dimensions.x > posDifference.x && dimensions.y > posDifference.y) {
+          // character.takeDamage(character.power, character.mtxLocal.translation);
+          let damageEvent: Event = new CustomEvent("Damage", {
+            bubbles: true,
+            detail: { _sourcePower: this.power, _sourcePos: this.mtxLocal.translation }
+          })
+          _entity.dispatchEvent(damageEvent);
+          // play explosion
+          this.cmpAudio.play(true);
+          this.state = State.Die;
+          // then destroy projectile
+          setTimeout(() => {
+            hdlDestruction(this, projectiles);
+          }, 1000);
         }
       }
     }
@@ -127,8 +159,8 @@ namespace Script {
     // }
 
     protected async initializeAnimations(): Promise<void> {
-      let rectangles: Rectangles = { "idle": [0, 0, 16, 16] };
-      await super.initializeAnimations(this.textureSrc, rectangles, 1, this.resolution);
+      let rectangles: Rectangles = { "idle": [0, 0, this.spriteDimensions.x, this.spriteDimensions.y] };
+      await super.initializeAnimations(this.textureSrc, rectangles, this.frameCount, this.resolution);
 
       this.spriteNode.setAnimation(<ƒAid.SpriteSheetAnimation>this.animations.idle);
       this.state = State.Idle;

@@ -16,4 +16,4 @@ xE	Animation	          - Animate using the animation system of FudgeCore (1) and
 o- Fireball Explosion Frames & Animation
 x- Gegner-Wellen (mit State Machine)
 o- ScriptComponents on random drop in PowerUps
-o- ComponentStateMachine on Goriya Enemy
+x- ComponentStateMachine on Goriya Enemy

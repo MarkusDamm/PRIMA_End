@@ -51,6 +51,7 @@ namespace Script {
     console.log(config.control);
     arenaDimension = new ƒ.Vector2(config.arena.dimensionX, config.arena.dimensionY);
     floorTileSrc = config.arena.floorTextureSource;
+    Goriya.setFireballSrc(config.enemies.goriya.fireballTextureSrc);
 
     // get the graph to show from loaded resources
     let graph: ƒ.Graph = <ƒ.Graph>ƒ.Project.resources[_graphId];

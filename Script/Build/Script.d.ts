@@ -128,7 +128,6 @@ declare namespace Script {
         duration: number;
     }
     class Flame extends Entity {
-        private fireballTextureSrc;
         readonly affinity = Affinity.Flame;
         protected velocity: ƒ.Vector2;
         /**
@@ -208,16 +207,28 @@ declare namespace Script {
         readonly affinity = Affinity.Enemy;
         protected hasIFrames: boolean;
         protected health: number;
+        private static fireballSpriteSrc;
+        private isAttackReady;
+        private idleTimer;
+        private static idleTimeout;
         private target;
         private isUnveiled;
-        private currentDirection;
+        private currentMoveAnimationDirection;
+        private targetDirection;
+        private cmpStateMachine;
         constructor(_spawnPosition: ƒ.Vector3, _data: any);
+        static setFireballSrc(_textureSrc: string): void;
+        private setupStateMachine;
+        private transitChoosePosition;
+        private transitToIdle;
+        private actIdle;
+        private actMove;
+        private actShoot;
         protected attack(_event?: Event | KeyboardEvent): void;
         die(): void;
         protected unveil(): void;
         update(_deltaTime: number): void;
         protected initializeAnimations(): Promise<void>;
-        protected move(_deltaTime: number): void;
     }
 }
 declare namespace Script {
@@ -241,21 +252,22 @@ declare namespace Script {
 }
 declare namespace Script {
     class Projectile extends TexturedMoveable {
-        protected textureSrc: string;
         private soundSrc;
         private cmpAudio;
-        static spriteDimensions: ƒ.Vector2;
+        private spriteDimensions;
+        private frameCount;
         protected animations: ƒAid.SpriteSheetAnimations;
         private velocity;
         protected speed: number;
         private affinity;
         private power;
         private state;
-        constructor(_position: ƒ.Vector3, _direction: ƒ.Vector2, _affinity: Affinity, _power: number, _spriteSource: string);
+        constructor(_position: ƒ.Vector3, _direction: ƒ.Vector2, _affinity: Affinity, _power: number, _spriteSource?: string, _spriteSize?: ƒ.Vector2, _frameCount?: number);
         private adjustSprite;
         update(_deltaTime: number): void;
         protected move(_deltaTime: number): void;
         private checkForCollision;
+        private checkCollisionFor;
         protected initializeAnimations(): Promise<void>;
     }
 }

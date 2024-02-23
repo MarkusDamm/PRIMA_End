@@ -10,8 +10,6 @@ namespace Script {
   export interface Timeout { timeoutID: number, duration: number };
 
   export class Flame extends Entity {
-    // protected textureSrc: string = "./Images/H-Sheet32x32.png";
-    private fireballTextureSrc: string = "./Images/Fireball16x16.png";
     public readonly affinity = Affinity.Flame;
     protected velocity: ƒ.Vector2 = new ƒ.Vector2();
 
@@ -72,7 +70,7 @@ namespace Script {
             break;
           default: return;
         }
-        let projectile: Projectile = new Projectile(this.mtxLocal.translation, attackDirection, Affinity.Flame, this.power, this.fireballTextureSrc);
+        let projectile: Projectile = new Projectile(this.mtxLocal.translation, attackDirection, Affinity.Flame, this.power);
         hdlCreation(projectile, projectiles);
 
         this.isAttackAvailable = false;

@@ -193,6 +193,7 @@ var Script;
         console.log(Script.config.control);
         arenaDimension = new ƒ.Vector2(Script.config.arena.dimensionX, Script.config.arena.dimensionY);
         floorTileSrc = Script.config.arena.floorTextureSource;
+        Script.Goriya.setFireballSrc(Script.config.enemies.goriya.fireballTextureSrc);
         // get the graph to show from loaded resources
         let graph = ƒ.Project.resources[_graphId];
         ƒ.Debug.log("Graph:", graph);
@@ -433,8 +434,6 @@ var Script;
     class Flame extends Script.Entity {
         constructor(_data) {
             super(_data);
-            // protected textureSrc: string = "./Images/H-Sheet32x32.png";
-            this.fireballTextureSrc = "./Images/Fireball16x16.png";
             this.affinity = Script.Affinity.Flame;
             this.velocity = new ƒ.Vector2();
             this.isAttackAvailable = true;
@@ -457,7 +456,7 @@ var Script;
                             break;
                         default: return;
                     }
-                    let projectile = new Script.Projectile(this.mtxLocal.translation, attackDirection, Script.Affinity.Flame, this.power, this.fireballTextureSrc);
+                    let projectile = new Script.Projectile(this.mtxLocal.translation, attackDirection, Script.Affinity.Flame, this.power);
                     Script.hdlCreation(projectile, Script.projectiles);
                     this.isAttackAvailable = false;
                     setTimeout(() => {
@@ -753,6 +752,7 @@ var Script;
 ///<reference path="./Entity.ts"/>
 ///<reference path="./Main.ts"/>
 (function (Script) {
+    var ƒAid = FudgeAid;
     let Direction;
     (function (Direction) {
         Direction[Direction["Up"] = 0] = "Up";
@@ -762,6 +762,12 @@ var Script;
         Direction[Direction["None"] = 4] = "None";
     })(Direction || (Direction = {}));
     ;
+    let GoriyaState;
+    (function (GoriyaState) {
+        GoriyaState[GoriyaState["Idle"] = 0] = "Idle";
+        GoriyaState[GoriyaState["Move"] = 1] = "Move";
+        GoriyaState[GoriyaState["Shoot"] = 2] = "Shoot";
+    })(GoriyaState || (GoriyaState = {}));
     class Goriya extends Script.Entity {
         // private targetUpdateTimeout: Timeout;
         constructor(_spawnPosition, _data) {
@@ -771,14 +777,114 @@ var Script;
             this.affinity = Script.Affinity.Enemy;
             this.hasIFrames = false;
             this.health = 10;
+            this.transitChoosePosition = (_machine) => {
+                let flamePos = Script.flame.mtxLocal.translation.toVector2();
+                this.targetDirection = Math.round(Script.randomNumber(-0.49, 3.49));
+                let targetDistanceToFlame = Script.randomNumber(6, 10);
+                switch (this.targetDirection) {
+                    case Direction.Up:
+                        this.target = ƒ.Vector2.SUM(flamePos, ƒ.Vector2.Y(-targetDistanceToFlame));
+                        break;
+                    case Direction.Right:
+                        this.target = ƒ.Vector2.SUM(flamePos, ƒ.Vector2.X(-targetDistanceToFlame));
+                        break;
+                    case Direction.Down:
+                        this.target = ƒ.Vector2.SUM(flamePos, ƒ.Vector2.Y(targetDistanceToFlame));
+                        break;
+                    case Direction.Left:
+                        this.target = ƒ.Vector2.SUM(flamePos, ƒ.Vector2.X(targetDistanceToFlame));
+                        break;
+                    default:
+                        console.error("No valid target Direction for Goriya!");
+                        break;
+                }
+            };
+            this.transitToIdle = (_machine) => {
+                this.idleTimer = 0;
+            };
+            this.actIdle = (_machine) => {
+                this.idleTimer++;
+                if (this.currentMoveAnimationDirection != Direction.Down) {
+                    this.currentMoveAnimationDirection = Direction.Down;
+                    this.spriteNode.setAnimation(this.animations.down);
+                }
+                if (this.idleTimer >= Goriya.idleTimeout) {
+                    this.isAttackReady = true;
+                    _machine.transit(GoriyaState.Move);
+                }
+            };
+            this.actMove = (_machine) => {
+                let deltaTime = ƒ.Loop.timeFrameGame / 1000;
+                this.velocity = ƒ.Vector2.DIFFERENCE(this.target, this.mtxLocal.translation.toVector2());
+                if (this.velocity.magnitude < 0.2) {
+                    _machine.transit(GoriyaState.Shoot);
+                    return;
+                }
+                this.velocity.normalize(this.speed);
+                this.velocity.scale(deltaTime);
+                this.mtxLocal.translateX(this.velocity.x);
+                this.mtxLocal.translateY(this.velocity.y);
+            };
+            this.actShoot = (_machine) => {
+                if (!this.isAttackReady) {
+                    return;
+                }
+                let attackDirection;
+                switch (this.targetDirection) {
+                    case Direction.Up:
+                        attackDirection = ƒ.Vector2.Y();
+                        break;
+                    case Direction.Right:
+                        attackDirection = ƒ.Vector2.X();
+                        break;
+                    case Direction.Down:
+                        attackDirection = ƒ.Vector2.Y(-1);
+                        break;
+                    case Direction.Left:
+                        attackDirection = ƒ.Vector2.X(-1);
+                        break;
+                    default:
+                        console.warn("No valid target Direction for Goriya to attack.");
+                        return;
+                }
+                let projectile = new Script.Projectile(this.mtxLocal.translation, attackDirection, Script.Affinity.Enemy, this.power, Goriya.fireballSpriteSrc, new ƒ.Vector2(16, 7), 2);
+                Script.hdlCreation(projectile, Script.projectiles);
+                this.isAttackReady = false;
+                _machine.transit(GoriyaState.Idle);
+            };
             this.hasIFrames = false;
             this.addEventListener("Damage", this.takeDamage.bind(this));
             this.addEventListener("enemyIsClose", this.unveil.bind(this));
             this.mtxLocal.translate(_spawnPosition);
-            this.target = Script.flame.mtxLocal.translation.toVector2();
+            this.velocity = new ƒ.Vector2(0, 0);
+            this.target = ƒ.Vector2.ZERO();
             this.isUnveiled = false;
-            this.currentDirection = Direction.None;
+            this.idleTimer = 0;
+            this.isAttackReady = true;
+            this.currentMoveAnimationDirection = Direction.None;
+            this.targetDirection = Direction.None;
+            this.cmpStateMachine = this.setupStateMachine();
+            this.cmpStateMachine.transit(GoriyaState.Idle);
+            this.addComponent(this.cmpStateMachine);
             this.initializeAnimations();
+        }
+        static setFireballSrc(_textureSrc) {
+            if (!Goriya.fireballSpriteSrc) {
+                Goriya.fireballSpriteSrc = _textureSrc;
+            }
+        }
+        setupStateMachine() {
+            let cmpStateMachine = new ƒAid.ComponentStateMachine();
+            let setup = new ƒAid.StateMachineInstructions();
+            setup.setTransition(GoriyaState.Idle, GoriyaState.Move, this.transitChoosePosition);
+            setup.setTransition(GoriyaState.Shoot, GoriyaState.Move, this.transitChoosePosition);
+            setup.setTransition(GoriyaState.Move, GoriyaState.Idle, this.transitToIdle);
+            setup.setTransition(GoriyaState.Shoot, GoriyaState.Idle, this.transitToIdle);
+            setup.setAction(GoriyaState.Idle, this.actIdle);
+            setup.setAction(GoriyaState.Move, this.actMove);
+            setup.setAction(GoriyaState.Shoot, this.actShoot);
+            cmpStateMachine.instructions = setup;
+            return cmpStateMachine;
         }
         attack(_event) {
         }
@@ -791,28 +897,30 @@ var Script;
             this.spriteNode.setAnimation(this.animations.side);
         }
         update(_deltaTime) {
-            this.move(_deltaTime);
-            if (this.isUnveiled) {
-                if (this.velocity.y > 0 && this.velocity.y > Script.getAmount(this.velocity.x) && this.currentDirection != Direction.Up) {
+            this.cmpStateMachine.act();
+            console.log("Current Goriya State", this.cmpStateMachine.stateCurrent);
+            // this.move(_deltaTime);
+            if (this.isUnveiled && this.velocity.magnitude > 0.1) {
+                if (this.velocity.y > 0 && this.velocity.y > Script.getAmount(this.velocity.x) && this.currentMoveAnimationDirection != Direction.Up) {
                     // move up
-                    this.currentDirection = Direction.Up;
+                    this.currentMoveAnimationDirection = Direction.Up;
                     this.spriteNode.setAnimation(this.animations.up);
                 }
-                else if (this.velocity.y <= 0 && Script.getAmount(this.velocity.y) > Script.getAmount(this.velocity.x) && this.currentDirection != Direction.Down) {
+                else if (this.velocity.y <= 0 && Script.getAmount(this.velocity.y) > Script.getAmount(this.velocity.x) && this.currentMoveAnimationDirection != Direction.Down) {
                     // move down
-                    this.currentDirection = Direction.Down;
+                    this.currentMoveAnimationDirection = Direction.Down;
                     this.spriteNode.setAnimation(this.animations.down);
                 }
-                else if (this.velocity.x < 0 && this.currentDirection != Direction.Left) {
+                else if (this.velocity.x < 0 && this.currentMoveAnimationDirection != Direction.Left) {
                     // move left
-                    this.currentDirection = Direction.Left;
+                    this.currentMoveAnimationDirection = Direction.Left;
                     this.spriteNode.setAnimation(this.animations.side);
                     // turn sprite
                     this.spriteNode.mtxLocal.rotation = ƒ.Vector3.Y(180);
                 }
-                else if (this.currentDirection != Direction.Right) {
+                else if (this.currentMoveAnimationDirection != Direction.Right) {
                     // move right
-                    this.currentDirection = Direction.Right;
+                    this.currentMoveAnimationDirection = Direction.Right;
                     this.spriteNode.setAnimation(this.animations.side);
                 }
             }
@@ -828,15 +936,8 @@ var Script;
             this.spriteNode.setAnimation(this.animations.hidden);
             this.state = Script.State.Hidden;
         }
-        // Adjust later for enemy to fire fireballs
-        move(_deltaTime) {
-            this.velocity = ƒ.Vector2.DIFFERENCE(this.target, this.mtxLocal.translation.toVector2());
-            this.velocity.normalize(this.speed);
-            this.velocity.scale(_deltaTime);
-            this.mtxLocal.translateX(this.velocity.x);
-            this.mtxLocal.translateY(this.velocity.y);
-        }
     }
+    Goriya.idleTimeout = 150;
     Script.Goriya = Goriya;
 })(Script || (Script = {}));
 ///<reference path="./Entity.ts"/>
@@ -909,9 +1010,8 @@ var Script;
 ///<reference path="./TexturedMoveable.ts"/>
 (function (Script) {
     class Projectile extends Script.TexturedMoveable {
-        constructor(_position, _direction, _affinity, _power, _spriteSource) {
-            super("Projectile", "ProjectileSprite", Projectile.spriteDimensions);
-            this.textureSrc = "./Images/Fireball16x16.png";
+        constructor(_position, _direction, _affinity, _power, _spriteSource = "./Images/Fireball16x16.png", _spriteSize = new ƒ.Vector2(16, 16), _frameCount = 1) {
+            super("Projectile", "ProjectileSprite", _spriteSize);
             this.soundSrc = "./Sounds/explosion.wav";
             this.animations = {};
             this.speed = 3;
@@ -922,6 +1022,8 @@ var Script;
             this.adjustSprite(_direction);
             this.affinity = _affinity;
             this.textureSrc = _spriteSource;
+            this.spriteDimensions = _spriteSize;
+            this.frameCount = _frameCount;
             this.power = _power;
             // add Audio Source
             let explosionAudio = new ƒ.Audio(this.soundSrc);
@@ -967,26 +1069,52 @@ var Script;
             }
         }
         checkForCollision() {
-            for (const entity of Script.entities) {
-                if (this.affinity != entity.affinity) {
-                    let posDifference = ƒ.Vector3.DIFFERENCE(this.mtxLocal.translation, entity.mtxLocal.translation);
-                    posDifference = posDifference.toVector2();
-                    if (posDifference.magnitude < 6) {
-                        let dimensions = ƒ.Vector2.SUM(this.hitbox, entity.hitbox);
-                        posDifference = new ƒ.Vector2(Script.getAmount(posDifference.x), Script.getAmount(posDifference.y));
-                        if (dimensions.x > posDifference.x && dimensions.y > posDifference.y) {
-                            // character.takeDamage(character.power, character.mtxLocal.translation);
-                            let damageEvent = new CustomEvent("Damage", { bubbles: true, detail: { _sourcePower: this.power, _sourcePos: this.mtxLocal.translation } });
-                            entity.dispatchEvent(damageEvent);
-                            // play explosion
-                            this.cmpAudio.play(true);
-                            this.state = Script.State.Die;
-                            // then destroy projectile
-                            setTimeout(() => {
-                                Script.hdlDestruction(this, Script.projectiles);
-                            }, 1000);
-                        }
-                    }
+            if (this.affinity == Script.Affinity.Flame) {
+                for (const entity of Script.entities) {
+                    this.checkCollisionFor(entity);
+                    // let posDifference: ƒ.Vector3 | ƒ.Vector2 = ƒ.Vector3.DIFFERENCE(this.mtxLocal.translation, entity.mtxLocal.translation);
+                    // posDifference = posDifference.toVector2();
+                    // if (posDifference.magnitude < 6) {
+                    //   let dimensions: ƒ.Vector2 = ƒ.Vector2.SUM(this.hitbox, entity.hitbox);
+                    //   posDifference = new ƒ.Vector2(getAmount(posDifference.x), getAmount(posDifference.y));
+                    //   if (dimensions.x > posDifference.x && dimensions.y > posDifference.y) {
+                    //     // character.takeDamage(character.power, character.mtxLocal.translation);
+                    //     let damageEvent: Event = new CustomEvent("Damage", { bubbles: true, detail: { _sourcePower: this.power, _sourcePos: this.mtxLocal.translation } })
+                    //     entity.dispatchEvent(damageEvent);
+                    //     // play explosion
+                    //     this.cmpAudio.play(true);
+                    //     this.state = State.Die;
+                    //     // then destroy projectile
+                    //     setTimeout(() => {
+                    //       hdlDestruction(this, projectiles);
+                    //     }, 1000);
+                    //   }
+                    // }
+                }
+            }
+            else
+                this.checkCollisionFor(Script.flame);
+        }
+        checkCollisionFor(_entity) {
+            let posDifference = ƒ.Vector3.DIFFERENCE(this.mtxLocal.translation, _entity.mtxLocal.translation);
+            posDifference = posDifference.toVector2();
+            if (posDifference.magnitude < 6) {
+                let dimensions = ƒ.Vector2.SUM(this.hitbox, _entity.hitbox);
+                posDifference = new ƒ.Vector2(Script.getAmount(posDifference.x), Script.getAmount(posDifference.y));
+                if (dimensions.x > posDifference.x && dimensions.y > posDifference.y) {
+                    // character.takeDamage(character.power, character.mtxLocal.translation);
+                    let damageEvent = new CustomEvent("Damage", {
+                        bubbles: true,
+                        detail: { _sourcePower: this.power, _sourcePos: this.mtxLocal.translation }
+                    });
+                    _entity.dispatchEvent(damageEvent);
+                    // play explosion
+                    this.cmpAudio.play(true);
+                    this.state = Script.State.Die;
+                    // then destroy projectile
+                    setTimeout(() => {
+                        Script.hdlDestruction(this, Script.projectiles);
+                    }, 1000);
                 }
             }
         }
@@ -1015,13 +1143,12 @@ var Script;
         //   }
         // }
         async initializeAnimations() {
-            let rectangles = { "idle": [0, 0, 16, 16] };
-            await super.initializeAnimations(this.textureSrc, rectangles, 1, this.resolution);
+            let rectangles = { "idle": [0, 0, this.spriteDimensions.x, this.spriteDimensions.y] };
+            await super.initializeAnimations(this.textureSrc, rectangles, this.frameCount, this.resolution);
             this.spriteNode.setAnimation(this.animations.idle);
             this.state = Script.State.Idle;
         }
     }
-    Projectile.spriteDimensions = new ƒ.Vector2(16, 16);
     Script.Projectile = Projectile;
 })(Script || (Script = {}));
 //# sourceMappingURL=Script.js.map
