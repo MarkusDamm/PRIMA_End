@@ -75,7 +75,7 @@ namespace Script {
       console.warn("EnemyCount for stage " + _machine.currentStage + 1 + " : " + _machine.stages[_machine.currentStage].enemyCount);
       counterGUI = new GUI(GUIType.EnemyCount, _machine.stages[_machine.currentStage].enemyCount);
 
-      console.log("Gamestate", _machine.stateCurrent, "Action");
+      // console.log("Gamestate", _machine.stateCurrent, "Action");
       _machine.transit(GameState.Wait);
     }
 
@@ -85,8 +85,8 @@ namespace Script {
     // }
 
     private static transitNextStage(_machine: GameStateMachine) {
-      console.log("GameState Transition from Wait to Next Stage");
-      console.log(_machine.stages, _machine.stages.length);
+      // console.log("GameState Transition from Wait to Next Stage");
+      // console.log(_machine.stages, _machine.stages.length);
 
       // if (_machine.stages.length < _machine.currentStage + 1) {
       if (_machine.stages[_machine.currentStage + 1]) {
@@ -119,7 +119,7 @@ namespace Script {
     }
 
     private static actVictory(_machine: GameStateMachine) {
-      console.log("Action", _machine.stateCurrent);
+      // console.log("Action", _machine.stateCurrent);
 
       let notification: HTMLElement = document.querySelector("div#notification");
       notification.querySelector("h1").innerText = "Your Flame never fades!!  Congratulations, you cleared all stages!";
@@ -130,7 +130,7 @@ namespace Script {
     }
 
     private static actDefeat(_machine: GameStateMachine) {
-      console.log("Action", _machine.stateCurrent);
+      // console.log("Action", _machine.stateCurrent);
 
       let notification: HTMLElement = document.querySelector("div#notification");
       notification.querySelector("h1").innerText = "Your Flame got extinguished! Try again.";

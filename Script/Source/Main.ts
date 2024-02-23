@@ -191,6 +191,21 @@ namespace Script {
         }
       }
     }
+    for (const powerUpNode of powerUps) {
+      let posDifference: ƒ.Vector3 | ƒ.Vector2 = ƒ.Vector3.DIFFERENCE(flame.mtxLocal.translation, powerUpNode.mtxLocal.translation);
+      posDifference = posDifference.toVector2();
+      if (posDifference.magnitude < 2) {
+        let dimensions: ƒ.Vector2 = ƒ.Vector2.SUM(flame.hitbox, AttributeUp.getDimensions);
+        posDifference = new ƒ.Vector2(getAmount(posDifference.x), getAmount(posDifference.y));
+        if (dimensions.x > posDifference.x && dimensions.y > posDifference.y) {
+          let powerUp: AttributeUp = powerUpNode.getComponent(AttributeUp);
+          flame.changeAttributes(powerUp.getPowerBoost[0], powerUp.getPowerBoost[1],
+            powerUp.getPowerBoost[2], powerUp.getPowerBoost[3]);
+          console.log(powerUp.getPowerBoost);
+          hdlDestruction(powerUpNode, powerUps);
+        }
+      }
+    }
   }
 
   function stopLoop(_event: KeyboardEvent): void {
@@ -261,7 +276,7 @@ namespace Script {
 
   function hdlPowerUpCreation(_event: CustomEvent): void {
     console.log("create Power Up");
-    
+
     let powerUp: ƒ.Node = new ƒ.Node("PowerUp" + powerUps.length);
     powerUp.addComponent(new ƒ.ComponentTransform());
     powerUp.mtxLocal.translation = _event.detail._sourcePos;

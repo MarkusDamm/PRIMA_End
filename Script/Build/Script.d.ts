@@ -9,6 +9,8 @@ declare namespace Script {
         private powerBoost;
         private boostKind;
         constructor();
+        static get getDimensions(): ƒ.Vector2;
+        get getPowerBoost(): number[];
         private setupNode;
         /**
          * setTextures
@@ -165,6 +167,7 @@ declare namespace Script {
          * @param _state current Frame
          */
         private chooseAnimation;
+        changeAttributes(_speedDifference: number, _healthDifference: number, _powerDifference: number, _cooldownDifference: number): void;
         unveil(): void;
     }
 }

@@ -25,8 +25,11 @@ namespace Script {
       this.addEventListener(ƒ.EVENT.COMPONENT_ADD, this.setupNode.bind(this));
     }
 
+    public static get getDimensions(): ƒ.Vector2 { return AttributeUp.dimensions }
+
+    public get getPowerBoost(): number[] { return this.powerBoost }
+
     private setupNode(_event: Event): void {
-      console.log(this.powerBoost);
       let cmpMat: ƒ.ComponentMaterial = this.node.getComponent(ƒ.ComponentMaterial);
       let texture: ƒ.TextureImage = new ƒ.TextureImage();
       switch (this.boostKind) {
@@ -48,7 +51,7 @@ namespace Script {
           break;
       }
       let coat: ƒ.CoatRemissiveTextured = new ƒ.CoatRemissiveTextured(ƒ.Color.CSS("white"), texture);
-      let mat: ƒ.Material = new ƒ.Material("TileMaterial", ƒ.ShaderLitTextured, coat);
+      let mat: ƒ.Material = new ƒ.Material("TileMaterial", ƒ.ShaderPhongTextured, coat);
       cmpMat.material = mat;
     }
 
@@ -62,9 +65,6 @@ namespace Script {
       AttributeUp.attackSpeedTextureSource = _data.attackSpeedTextureSource;
       AttributeUp.dimensions = new ƒ.Vector2(_data.dimensions.x, _data.dimensions.y);
       console.warn("Attribute Up Data");
-
-      console.log(AttributeUp.speedTextureSource, AttributeUp.healthTextureSource, AttributeUp.powerTextureSource, AttributeUp.attackSpeedTextureSource, AttributeUp.dimensions, AttributeUp);
-
     }
 
 

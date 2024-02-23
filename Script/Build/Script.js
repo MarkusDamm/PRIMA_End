@@ -23,8 +23,9 @@ var Script;
             this.boostKind = i;
             this.addEventListener("componentAdd" /* COMPONENT_ADD */, this.setupNode.bind(this));
         }
+        static get getDimensions() { return AttributeUp.dimensions; }
+        get getPowerBoost() { return this.powerBoost; }
         setupNode(_event) {
-            console.log(this.powerBoost);
             let cmpMat = this.node.getComponent(ƒ.ComponentMaterial);
             let texture = new ƒ.TextureImage();
             switch (this.boostKind) {
@@ -46,7 +47,7 @@ var Script;
                     break;
             }
             let coat = new ƒ.CoatRemissiveTextured(ƒ.Color.CSS("white"), texture);
-            let mat = new ƒ.Material("TileMaterial", ƒ.ShaderLitTextured, coat);
+            let mat = new ƒ.Material("TileMaterial", ƒ.ShaderPhongTextured, coat);
             cmpMat.material = mat;
         }
         /**
@@ -59,7 +60,6 @@ var Script;
             AttributeUp.attackSpeedTextureSource = _data.attackSpeedTextureSource;
             AttributeUp.dimensions = new ƒ.Vector2(_data.dimensions.x, _data.dimensions.y);
             console.warn("Attribute Up Data");
-            console.log(AttributeUp.speedTextureSource, AttributeUp.healthTextureSource, AttributeUp.powerTextureSource, AttributeUp.attackSpeedTextureSource, AttributeUp.dimensions, AttributeUp);
         }
     }
     Script.AttributeUp = AttributeUp;
@@ -369,6 +369,20 @@ var Script;
                 }
             }
         }
+        for (const powerUpNode of Script.powerUps) {
+            let posDifference = ƒ.Vector3.DIFFERENCE(Script.flame.mtxLocal.translation, powerUpNode.mtxLocal.translation);
+            posDifference = posDifference.toVector2();
+            if (posDifference.magnitude < 2) {
+                let dimensions = ƒ.Vector2.SUM(Script.flame.hitbox, Script.AttributeUp.getDimensions);
+                posDifference = new ƒ.Vector2(getAmount(posDifference.x), getAmount(posDifference.y));
+                if (dimensions.x > posDifference.x && dimensions.y > posDifference.y) {
+                    let powerUp = powerUpNode.getComponent(Script.AttributeUp);
+                    Script.flame.changeAttributes(powerUp.getPowerBoost[0], powerUp.getPowerBoost[1], powerUp.getPowerBoost[2], powerUp.getPowerBoost[3]);
+                    console.log(powerUp.getPowerBoost);
+                    hdlDestruction(powerUpNode, Script.powerUps);
+                }
+            }
+        }
     }
     function stopLoop(_event) {
         if (_event.key == "p") {
@@ -537,8 +551,11 @@ var Script;
             this.lightNode.addComponent(new ƒ.ComponentTransform);
             let light = new ƒ.LightPoint(ƒ.Color.CSS("white"));
             let cmpLight = new ƒ.ComponentLight(light);
-            this.lightNode.addComponent(cmpLight);
-            this.lightNode.mtxLocal.scale(ƒ.Vector3.ONE(8));
+            cmpLight.mtxPivot.translateZ(-2);
+            cmpLight.mtxPivot.scale(ƒ.Vector3.ONE(12));
+            this.addComponent(cmpLight);
+            // this.lightNode.addComponent(cmpLight);
+            // this.lightNode.mtxLocal.scale(ƒ.Vector3.ONE(12));
             // this.appendChild(this.lightNode);
             this.hitTimeout = { timeoutID: 0, duration: 0 };
             this.initializeAnimations();
@@ -645,12 +662,12 @@ var Script;
             }
         }
         // For Power Ups
-        // public changeAttributes(_speedDifference: number, _healthDifference: number, _powerDifference: number, _cooldownDifference: number): void {
-        //   this.speed += _speedDifference;
-        //   this.health += _healthDifference;
-        //   this.power += _powerDifference;
-        //   this.attackCooldown += _cooldownDifference;
-        // }
+        changeAttributes(_speedDifference, _healthDifference, _powerDifference, _cooldownDifference) {
+            this.speed += _speedDifference;
+            this.health += _healthDifference;
+            this.power += _powerDifference;
+            this.attackCooldown += _cooldownDifference;
+        }
         unveil() {
             // propably useless here
         }
@@ -753,7 +770,7 @@ var Script;
             Script.addEnemy(_machine.stages[_machine.currentStage].enemyCount);
             console.warn("EnemyCount for stage " + _machine.currentStage + 1 + " : " + _machine.stages[_machine.currentStage].enemyCount);
             Script.counterGUI = new Script.GUI(Script.GUIType.EnemyCount, _machine.stages[_machine.currentStage].enemyCount);
-            console.log("Gamestate", _machine.stateCurrent, "Action");
+            // console.log("Gamestate", _machine.stateCurrent, "Action");
             _machine.transit(GameState.Wait);
         }
         // private static actRunning(_machine: GameStateMachine) {
@@ -761,8 +778,8 @@ var Script;
         //   console.log("running action");
         // }
         static transitNextStage(_machine) {
-            console.log("GameState Transition from Wait to Next Stage");
-            console.log(_machine.stages, _machine.stages.length);
+            // console.log("GameState Transition from Wait to Next Stage");
+            // console.log(_machine.stages, _machine.stages.length);
             // if (_machine.stages.length < _machine.currentStage + 1) {
             if (_machine.stages[_machine.currentStage + 1]) {
                 _machine.currentStage++;
@@ -791,7 +808,7 @@ var Script;
             }
         }
         static actVictory(_machine) {
-            console.log("Action", _machine.stateCurrent);
+            // console.log("Action", _machine.stateCurrent);
             let notification = document.querySelector("div#notification");
             notification.querySelector("h1").innerText = "Your Flame never fades!!  Congratulations, you cleared all stages!";
             notification.hidden = false;
@@ -799,7 +816,7 @@ var Script;
             ƒ.Loop.stop();
         }
         static actDefeat(_machine) {
-            console.log("Action", _machine.stateCurrent);
+            // console.log("Action", _machine.stateCurrent);
             let notification = document.querySelector("div#notification");
             notification.querySelector("h1").innerText = "Your Flame got extinguished! Try again.";
             notification.hidden = false;

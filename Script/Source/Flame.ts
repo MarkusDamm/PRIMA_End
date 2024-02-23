@@ -37,8 +37,11 @@ namespace Script {
       this.lightNode.addComponent(new ƒ.ComponentTransform);
       let light: ƒ.Light = new ƒ.LightPoint(ƒ.Color.CSS("white"));
       let cmpLight: ƒ.ComponentLight = new ƒ.ComponentLight(light);
-      this.lightNode.addComponent(cmpLight);
-      this.lightNode.mtxLocal.scale(ƒ.Vector3.ONE(8));
+      cmpLight.mtxPivot.translateZ(-2);
+      cmpLight.mtxPivot.scale(ƒ.Vector3.ONE(12));
+      this.addComponent(cmpLight);
+      // this.lightNode.addComponent(cmpLight);
+      // this.lightNode.mtxLocal.scale(ƒ.Vector3.ONE(12));
       // this.appendChild(this.lightNode);
 
       this.hitTimeout = { timeoutID: 0, duration: 0 };
@@ -193,12 +196,12 @@ namespace Script {
     }
 
     // For Power Ups
-    // public changeAttributes(_speedDifference: number, _healthDifference: number, _powerDifference: number, _cooldownDifference: number): void {
-    //   this.speed += _speedDifference;
-    //   this.health += _healthDifference;
-    //   this.power += _powerDifference;
-    //   this.attackCooldown += _cooldownDifference;
-    // }
+    public changeAttributes(_speedDifference: number, _healthDifference: number, _powerDifference: number, _cooldownDifference: number): void {
+      this.speed += _speedDifference;
+      this.health += _healthDifference;
+      this.power += _powerDifference;
+      this.attackCooldown += _cooldownDifference;
+    }
 
     unveil(): void {
       // propably useless here
