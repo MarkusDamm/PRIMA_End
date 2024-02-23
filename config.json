@@ -12,11 +12,6 @@
     "power": 2,
     "attackCooldown": 400
   },
-  "enemy": {
-    "speed": 3,
-    "health": 5,
-    "power": 1
-  },
   "enemies": {
     "octo": {
       "name": "Octo",
@@ -34,7 +29,7 @@
       "name": "Goriya",
       "textureSrc": "./Images/Goriya22x25.png",
       "hiddenTextureSrc": "./Images/Goriya-Hidden22x25.png",
-      "fireballTextureSrc" : "./Images/Fireball16x7-sheet.png",
+      "fireballTextureSrc": "./Images/Fireball16x7-sheet.png",
       "spriteDimensions": [
         22,
         25
@@ -73,5 +68,15 @@
     "floorTextureSource": "./Images/Floor-TileBorderless24x24.png",
     "dimensionX": 150,
     "dimensionY": 150
+  },
+  "powerUps": {
+    "speedTextureSource": "./Images/speedUp6x6.png",
+    "powerTextureSource": "./Images/powerUp6x6.png",
+    "healthTextureSource": "./Images/healthUp6x6.png",
+    "attackSpeedTextureSource": "./Images/atkspeedUp6x6.png",
+    "dimensions": {
+      "x": 6,
+      "y": 6
+    }
   }
 }

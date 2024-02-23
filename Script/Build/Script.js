@@ -2,9 +2,64 @@
 var Script;
 (function (Script) {
     var ƒ = FudgeCore;
+    let BoostKind;
+    (function (BoostKind) {
+        BoostKind[BoostKind["Speed"] = 0] = "Speed";
+        BoostKind[BoostKind["Health"] = 1] = "Health";
+        BoostKind[BoostKind["Power"] = 2] = "Power";
+        BoostKind[BoostKind["AttackSpeed"] = 3] = "AttackSpeed";
+    })(BoostKind || (BoostKind = {}));
     class AttributeUp extends ƒ.ComponentScript {
         constructor() {
             super();
+            this.powerBoost = [0, 0, 0, 0];
+            let multiplier = 0.25;
+            let randomNumber = Math.random();
+            let i = 1;
+            while (randomNumber > i * multiplier) {
+                i++;
+            }
+            this.powerBoost[i--] = 1;
+            this.boostKind = i;
+            this.addEventListener("componentAdd" /* COMPONENT_ADD */, this.setupNode.bind(this));
+        }
+        setupNode(_event) {
+            console.log(this.powerBoost);
+            let cmpMat = this.node.getComponent(ƒ.ComponentMaterial);
+            let texture = new ƒ.TextureImage();
+            switch (this.boostKind) {
+                case BoostKind.Speed:
+                    texture.load(AttributeUp.speedTextureSource);
+                    break;
+                case BoostKind.Health:
+                    texture.load(AttributeUp.healthTextureSource);
+                    break;
+                case BoostKind.Power:
+                    texture.load(AttributeUp.powerTextureSource);
+                    break;
+                case BoostKind.AttackSpeed:
+                    texture.load(AttributeUp.attackSpeedTextureSource);
+                    this.powerBoost[this.boostKind] = -50; // generic number for reducing the time between attacks
+                    break;
+                default:
+                    console.warn("No valid kind of boost detected.");
+                    break;
+            }
+            let coat = new ƒ.CoatRemissiveTextured(ƒ.Color.CSS("white"), texture);
+            let mat = new ƒ.Material("TileMaterial", ƒ.ShaderLitTextured, coat);
+            cmpMat.material = mat;
+        }
+        /**
+         * setTextures
+         */
+        static setTextures(_data) {
+            AttributeUp.speedTextureSource = _data.speedTextureSource;
+            AttributeUp.healthTextureSource = _data.healthTextureSource;
+            AttributeUp.powerTextureSource = _data.powerTextureSource;
+            AttributeUp.attackSpeedTextureSource = _data.attackSpeedTextureSource;
+            AttributeUp.dimensions = new ƒ.Vector2(_data.dimensions.x, _data.dimensions.y);
+            console.warn("Attribute Up Data");
+            console.log(AttributeUp.speedTextureSource, AttributeUp.healthTextureSource, AttributeUp.powerTextureSource, AttributeUp.attackSpeedTextureSource, AttributeUp.dimensions, AttributeUp);
         }
     }
     Script.AttributeUp = AttributeUp;
@@ -171,6 +226,7 @@ var Script;
     let gameStateMachine;
     Script.entities = [];
     Script.projectiles = [];
+    Script.powerUps = [];
     document.addEventListener("interactiveViewportStarted", start);
     window.addEventListener("load", init);
     window.addEventListener("keydown", stopLoop);
@@ -231,7 +287,8 @@ var Script;
         let floorTexture = new ƒ.TextureImage();
         await floorTexture.load(floorTileSrc);
         setUpFloor(floorTexture);
-        Script.flame = new Script.Flame(await Script.config.player);
+        Script.AttributeUp.setTextures(Script.config.powerUps);
+        Script.flame = new Script.Flame(Script.config.player);
         Script.Control.getInstance();
         // flame.initializeAnimations();
         branch.appendChild(Script.flame);
@@ -239,6 +296,7 @@ var Script;
         gameStateMachine = Script.GameStateMachine.getInstance();
         gameStateMachine.transit(Script.GameState.Start);
         document.addEventListener("keydown", Script.flame.attack);
+        branch.addEventListener("createPowerUp", hdlPowerUpCreation, true);
         ƒ.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, update);
         ƒ.Loop.start(); // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
         document.dispatchEvent(new CustomEvent("startedPrototype", { bubbles: true, detail: viewport }));
@@ -304,17 +362,14 @@ var Script;
                 let dimensions = ƒ.Vector2.SUM(Script.flame.hitbox, entity.hitbox);
                 posDifference = new ƒ.Vector2(getAmount(posDifference.x), getAmount(posDifference.y));
                 if (dimensions.x > posDifference.x && dimensions.y > posDifference.y) {
-                    let damageEvent = new CustomEvent("Damage", { bubbles: false, detail: { _sourcePower: entity.power, _sourcePos: entity.mtxLocal.translation } });
+                    let damageEvent = new CustomEvent("Damage", {
+                        bubbles: false, detail: { _sourcePower: entity.power, _sourcePos: entity.mtxLocal.translation }
+                    });
                     Script.flame.dispatchEventToTargetOnly(damageEvent);
                 }
             }
         }
     }
-    // function checkDistance(_current: Entity, _target: Entity): number {
-    //   let posDifference: ƒ.Vector3 | ƒ.Vector2 = ƒ.Vector3.DIFFERENCE(_target.mtxLocal.translation, _current.mtxLocal.translation);
-    //   posDifference = posDifference.toVector2();
-    //   return posDifference.magnitude;
-    // }
     function stopLoop(_event) {
         if (_event.key == "p") {
             console.log("P pressed for pause, press o to continue");
@@ -325,7 +380,6 @@ var Script;
         }
     }
     function hdlCreation(_creation, _array) {
-        // _creation.initializeAnimations();
         branch.appendChild(_creation);
         _array.push(_creation);
     }
@@ -380,6 +434,16 @@ var Script;
             return _number;
     }
     Script.getAmount = getAmount;
+    function hdlPowerUpCreation(_event) {
+        console.log("create Power Up");
+        let powerUp = new ƒ.Node("PowerUp" + Script.powerUps.length);
+        powerUp.addComponent(new ƒ.ComponentTransform());
+        powerUp.mtxLocal.translation = _event.detail._sourcePos;
+        powerUp.addComponent(new ƒ.ComponentMesh(new ƒ.MeshSprite("meshPowerUp")));
+        powerUp.addComponent(new ƒ.ComponentMaterial(new ƒ.Material("matPowerUp", ƒ.ShaderLitTextured)));
+        powerUp.addComponent(new Script.AttributeUp());
+        hdlCreation(powerUp, Script.powerUps);
+    }
 })(Script || (Script = {}));
 ///<reference path="./TexturedMoveable.ts"/>
 ///<reference path="./Main.ts"/>
@@ -581,7 +645,7 @@ var Script;
             }
         }
         // For Power Ups
-        // private changeAttributes(_speedDifference: number, _healthDifference: number, _powerDifference: number, _cooldownDifference: number): void {
+        // public changeAttributes(_speedDifference: number, _healthDifference: number, _powerDifference: number, _cooldownDifference: number): void {
         //   this.speed += _speedDifference;
         //   this.health += _healthDifference;
         //   this.power += _powerDifference;
@@ -682,7 +746,7 @@ var Script;
         }
         static actDefault(_machine) {
             //not needed?
-            console.log("default action", _machine.stateCurrent);
+            // console.log("default action", _machine.stateCurrent);
         }
         static actStart(_machine) {
             //spawn enemies
@@ -889,6 +953,13 @@ var Script;
         attack(_event) {
         }
         die() {
+            let randomNumber = Math.random();
+            if (randomNumber < 0.8) {
+                let powerUpEvent = new CustomEvent("createPowerUp", {
+                    bubbles: true, detail: { _sourcePos: this.mtxLocal.translation }
+                });
+                this.dispatchEvent(powerUpEvent);
+            }
             Script.hdlDestruction(this, Script.entities);
         }
         unveil() {
@@ -898,7 +969,7 @@ var Script;
         }
         update(_deltaTime) {
             this.cmpStateMachine.act();
-            console.log("Current Goriya State", this.cmpStateMachine.stateCurrent);
+            // console.log("Current Goriya State", this.cmpStateMachine.stateCurrent);
             // this.move(_deltaTime);
             if (this.isUnveiled && this.velocity.magnitude > 0.1) {
                 if (this.velocity.y > 0 && this.velocity.y > Script.getAmount(this.velocity.x) && this.currentMoveAnimationDirection != Direction.Up) {
@@ -989,6 +1060,13 @@ var Script;
             // console.log(this, "takes damage ", _event.detail._sourcePos);
         }
         die() {
+            let randomNumber = Math.random();
+            if (randomNumber < 0.3) {
+                let powerUpEvent = new CustomEvent("createPowerUp", {
+                    bubbles: true, detail: { _sourcePos: this.mtxLocal.translation }
+                });
+                this.dispatchEvent(powerUpEvent);
+            }
             Script.hdlDestruction(this, Script.entities);
         }
         update(_deltaTime) {

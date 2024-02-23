@@ -193,7 +193,7 @@ namespace Script {
     }
 
     // For Power Ups
-    // private changeAttributes(_speedDifference: number, _healthDifference: number, _powerDifference: number, _cooldownDifference: number): void {
+    // public changeAttributes(_speedDifference: number, _healthDifference: number, _powerDifference: number, _cooldownDifference: number): void {
     //   this.speed += _speedDifference;
     //   this.health += _healthDifference;
     //   this.power += _powerDifference;

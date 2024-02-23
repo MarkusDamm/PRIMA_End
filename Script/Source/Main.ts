@@ -22,6 +22,7 @@ namespace Script {
   export let flame: Flame;
   export let entities: Entity[] = [];
   export let projectiles: Projectile[] = [];
+  export let powerUps: ƒ.Node[] = [];
 
   export let config: any;
 
@@ -98,8 +99,9 @@ namespace Script {
     let floorTexture: ƒ.TextureImage = new ƒ.TextureImage();
     await floorTexture.load(floorTileSrc);
     setUpFloor(floorTexture);
+    AttributeUp.setTextures(config.powerUps);
 
-    flame = new Flame(await config.player);
+    flame = new Flame(config.player);
     Control.getInstance();
     // flame.initializeAnimations();
     branch.appendChild(flame);
@@ -109,6 +111,7 @@ namespace Script {
     gameStateMachine.transit(GameState.Start);
 
     document.addEventListener("keydown", flame.attack);
+    branch.addEventListener("createPowerUp", hdlPowerUpCreation, true);
     ƒ.Loop.addEventListener(ƒ.EVENT.LOOP_FRAME, update);
 
     ƒ.Loop.start();  // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
@@ -181,18 +184,14 @@ namespace Script {
         let dimensions: ƒ.Vector2 = ƒ.Vector2.SUM(flame.hitbox, entity.hitbox);
         posDifference = new ƒ.Vector2(getAmount(posDifference.x), getAmount(posDifference.y));
         if (dimensions.x > posDifference.x && dimensions.y > posDifference.y) {
-          let damageEvent: Event = new CustomEvent("Damage", { bubbles: false, detail: { _sourcePower: entity.power, _sourcePos: entity.mtxLocal.translation } });
+          let damageEvent: Event = new CustomEvent("Damage", {
+            bubbles: false, detail: { _sourcePower: entity.power, _sourcePos: entity.mtxLocal.translation }
+          });
           flame.dispatchEventToTargetOnly(damageEvent);
         }
       }
     }
   }
-
-  // function checkDistance(_current: Entity, _target: Entity): number {
-  //   let posDifference: ƒ.Vector3 | ƒ.Vector2 = ƒ.Vector3.DIFFERENCE(_target.mtxLocal.translation, _current.mtxLocal.translation);
-  //   posDifference = posDifference.toVector2();
-  //   return posDifference.magnitude;
-  // }
 
   function stopLoop(_event: KeyboardEvent): void {
     if (_event.key == "p") {
@@ -204,13 +203,12 @@ namespace Script {
     }
   }
 
-  export function hdlCreation(_creation: TexturedMoveable, _array: any[]): void {
-    // _creation.initializeAnimations();
+  export function hdlCreation(_creation: ƒ.Node, _array: any[]): void {
     branch.appendChild(_creation);
     _array.push(_creation);
   }
 
-  export function hdlDestruction(_creation: TexturedMoveable, _array: any[]): void {
+  export function hdlDestruction(_creation: ƒ.Node, _array: any[]): void {
     branch.removeChild(_creation);
     for (let i = 0; i < _array.length; i++) {
       if (_creation == _array[i]) {
@@ -259,6 +257,18 @@ namespace Script {
     }
     else
       return _number;
+  }
+
+  function hdlPowerUpCreation(_event: CustomEvent): void {
+    console.log("create Power Up");
+    
+    let powerUp: ƒ.Node = new ƒ.Node("PowerUp" + powerUps.length);
+    powerUp.addComponent(new ƒ.ComponentTransform());
+    powerUp.mtxLocal.translation = _event.detail._sourcePos;
+    powerUp.addComponent(new ƒ.ComponentMesh(new ƒ.MeshSprite("meshPowerUp")))
+    powerUp.addComponent(new ƒ.ComponentMaterial(new ƒ.Material("matPowerUp", ƒ.ShaderLitTextured)))
+    powerUp.addComponent(new AttributeUp());
+    hdlCreation(powerUp, powerUps);
   }
 
 }

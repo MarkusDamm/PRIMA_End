@@ -8,7 +8,6 @@ namespace Script {
     // Properties may be mutated by users in the editor via the automatically created user interface
     public message: string = "CustomComponentScript added to ";
 
-
     constructor() {
       super();
 

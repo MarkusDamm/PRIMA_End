@@ -156,6 +156,13 @@ namespace Script {
     }
 
     die(): void {
+      let randomNumber: number = Math.random();
+      if (randomNumber < 0.8) {
+        let powerUpEvent: CustomEvent = new CustomEvent("createPowerUp", {
+          bubbles: true, detail: { _sourcePos: this.mtxLocal.translation }
+        })
+        this.dispatchEvent(powerUpEvent);
+      }
       hdlDestruction(this, entities);
     }
 
@@ -167,7 +174,7 @@ namespace Script {
 
     public update(_deltaTime: number): void {
       this.cmpStateMachine.act();
-      console.log("Current Goriya State", this.cmpStateMachine.stateCurrent);
+      // console.log("Current Goriya State", this.cmpStateMachine.stateCurrent);
 
       // this.move(_deltaTime);
 

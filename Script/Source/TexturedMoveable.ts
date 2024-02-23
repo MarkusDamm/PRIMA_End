@@ -48,7 +48,6 @@ namespace Script {
 
       this.spriteNode.setFrameDirection(1);
       this.spriteNode.framerate = 6;
-
     }
 
     /**

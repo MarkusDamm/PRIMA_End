@@ -66,7 +66,7 @@ namespace Script {
 
     private static actDefault(_machine: GameStateMachine) {
       //not needed?
-      console.log("default action", _machine.stateCurrent);
+      // console.log("default action", _machine.stateCurrent);
     }
 
     private static actStart(_machine: GameStateMachine) {

@@ -56,6 +56,13 @@ namespace Script {
     }
 
     die(): void {
+      let randomNumber: number = Math.random();
+      if (randomNumber < 0.3) {
+        let powerUpEvent: CustomEvent = new CustomEvent("createPowerUp", {
+          bubbles: true, detail: { _sourcePos: this.mtxLocal.translation }
+        })
+        this.dispatchEvent(powerUpEvent);
+      }
       hdlDestruction(this, entities);
     }
 

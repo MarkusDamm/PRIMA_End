@@ -1,7 +1,19 @@
 declare namespace Script {
     import ƒ = FudgeCore;
     class AttributeUp extends ƒ.ComponentScript {
+        private static speedTextureSource;
+        private static healthTextureSource;
+        private static powerTextureSource;
+        private static attackSpeedTextureSource;
+        private static dimensions;
+        private powerBoost;
+        private boostKind;
         constructor();
+        private setupNode;
+        /**
+         * setTextures
+         */
+        static setTextures(_data: any): void;
     }
 }
 declare namespace Script {
@@ -89,11 +101,12 @@ declare namespace Script {
     let flame: Flame;
     let entities: Entity[];
     let projectiles: Projectile[];
+    let powerUps: ƒ.Node[];
     let config: any;
     function addEnemy(_amount: number): void;
     function randomNumber(_lowEnd: number, _highEnd: number): number;
-    function hdlCreation(_creation: TexturedMoveable, _array: any[]): void;
-    function hdlDestruction(_creation: TexturedMoveable, _array: any[]): void;
+    function hdlCreation(_creation: ƒ.Node, _array: any[]): void;
+    function hdlDestruction(_creation: ƒ.Node, _array: any[]): void;
     /**
      * get the amount (Betrag) of a number
      */
