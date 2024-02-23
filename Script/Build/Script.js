@@ -753,9 +753,15 @@ var Script;
 ///<reference path="./Entity.ts"/>
 ///<reference path="./Main.ts"/>
 (function (Script) {
-    // enum Direction {
-    //   Up, Right, Down, Left
-    // };
+    let Direction;
+    (function (Direction) {
+        Direction[Direction["Up"] = 0] = "Up";
+        Direction[Direction["Right"] = 1] = "Right";
+        Direction[Direction["Down"] = 2] = "Down";
+        Direction[Direction["Left"] = 3] = "Left";
+        Direction[Direction["None"] = 4] = "None";
+    })(Direction || (Direction = {}));
+    ;
     class Goriya extends Script.Entity {
         // private targetUpdateTimeout: Timeout;
         constructor(_spawnPosition, _data) {
@@ -771,6 +777,7 @@ var Script;
             this.mtxLocal.translate(_spawnPosition);
             this.target = Script.flame.mtxLocal.translation.toVector2();
             this.isUnveiled = false;
+            this.currentDirection = Direction.None;
             this.initializeAnimations();
         }
         attack(_event) {
@@ -786,22 +793,26 @@ var Script;
         update(_deltaTime) {
             this.move(_deltaTime);
             if (this.isUnveiled) {
-                if (this.velocity.y > 0 && this.velocity.y > Script.getAmount(this.velocity.x)) {
+                if (this.velocity.y > 0 && this.velocity.y > Script.getAmount(this.velocity.x) && this.currentDirection != Direction.Up) {
                     // move up
+                    this.currentDirection = Direction.Up;
                     this.spriteNode.setAnimation(this.animations.up);
                 }
-                else if (this.velocity.y <= 0 && Script.getAmount(this.velocity.y) > Script.getAmount(this.velocity.x)) {
+                else if (this.velocity.y <= 0 && Script.getAmount(this.velocity.y) > Script.getAmount(this.velocity.x) && this.currentDirection != Direction.Down) {
                     // move down
+                    this.currentDirection = Direction.Down;
                     this.spriteNode.setAnimation(this.animations.down);
                 }
-                else if (this.velocity.x < 0) {
+                else if (this.velocity.x < 0 && this.currentDirection != Direction.Left) {
                     // move left
+                    this.currentDirection = Direction.Left;
                     this.spriteNode.setAnimation(this.animations.side);
                     // turn sprite
                     this.spriteNode.mtxLocal.rotation = ƒ.Vector3.Y(180);
                 }
-                else {
+                else if (this.currentDirection != Direction.Right) {
                     // move right
+                    this.currentDirection = Direction.Right;
                     this.spriteNode.setAnimation(this.animations.side);
                 }
             }

@@ -210,6 +210,7 @@ declare namespace Script {
         protected health: number;
         private target;
         private isUnveiled;
+        private currentDirection;
         constructor(_spawnPosition: ƒ.Vector3, _data: any);
         protected attack(_event?: Event | KeyboardEvent): void;
         die(): void;

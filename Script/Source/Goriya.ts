@@ -3,9 +3,9 @@
 namespace Script {
   import ƒAid = FudgeAid;
 
-  // enum Direction {
-  //   Up, Right, Down, Left
-  // };
+  enum Direction {
+    Up, Right, Down, Left, None
+  };
 
   export class Goriya extends Entity {
     // protected hiddenTextureSrc: string = "./Images/Goriya-Hidden22x25.png";
@@ -17,6 +17,7 @@ namespace Script {
 
     private target: ƒ.Vector2;
     private isUnveiled: boolean;
+    private currentDirection: Direction;
     // private targetUpdateTimeout: Timeout;
 
     constructor(_spawnPosition: ƒ.Vector3, _data: any) {
@@ -28,6 +29,7 @@ namespace Script {
       this.mtxLocal.translate(_spawnPosition);
       this.target = flame.mtxLocal.translation.toVector2();
       this.isUnveiled = false;
+      this.currentDirection = Direction.None;
 
       this.initializeAnimations();
     }
@@ -50,22 +52,26 @@ namespace Script {
       this.move(_deltaTime);
 
       if (this.isUnveiled) {
-        if (this.velocity.y > 0 && this.velocity.y > getAmount(this.velocity.x)) {
+        if (this.velocity.y > 0 && this.velocity.y > getAmount(this.velocity.x) && this.currentDirection != Direction.Up) {
           // move up
+          this.currentDirection = Direction.Up;
           this.spriteNode.setAnimation(<ƒAid.SpriteSheetAnimation>this.animations.up)
         }
-        else if (this.velocity.y <= 0 && getAmount(this.velocity.y) > getAmount(this.velocity.x)) {
+        else if (this.velocity.y <= 0 && getAmount(this.velocity.y) > getAmount(this.velocity.x) && this.currentDirection != Direction.Down) {
           // move down
+          this.currentDirection = Direction.Down;
           this.spriteNode.setAnimation(<ƒAid.SpriteSheetAnimation>this.animations.down)
         }
-        else if (this.velocity.x < 0) {
+        else if (this.velocity.x < 0 && this.currentDirection != Direction.Left) {
           // move left
+          this.currentDirection = Direction.Left;
           this.spriteNode.setAnimation(<ƒAid.SpriteSheetAnimation>this.animations.side);
           // turn sprite
           this.spriteNode.mtxLocal.rotation = ƒ.Vector3.Y(180);
         }
-        else {
+        else if (this.currentDirection != Direction.Right) {
           // move right
+          this.currentDirection = Direction.Right;
           this.spriteNode.setAnimation(<ƒAid.SpriteSheetAnimation>this.animations.side)
         }
       }
