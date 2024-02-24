@@ -27,7 +27,7 @@ namespace Script {
       super(_data);
 
       this.attackCooldown = config.player.attackCooldown;
-      console.log("Health: " + this.health);
+      // console.log("Health: " + this.health);
       this.gui = new GUI(GUIType.Health, this.health);
 
       this.addEventListener("Damage", this.takeDamage.bind(this));
@@ -37,8 +37,8 @@ namespace Script {
       this.lightNode.addComponent(new ƒ.ComponentTransform);
       let light: ƒ.Light = new ƒ.LightPoint(ƒ.Color.CSS("white"));
       let cmpLight: ƒ.ComponentLight = new ƒ.ComponentLight(light);
-      cmpLight.mtxPivot.translateZ(-2);
-      cmpLight.mtxPivot.scale(ƒ.Vector3.ONE(12));
+      cmpLight.mtxPivot.translateZ(1);
+      cmpLight.mtxPivot.scale(ƒ.Vector3.ONE(6));
       this.addComponent(cmpLight);
       // this.lightNode.addComponent(cmpLight);
       // this.lightNode.mtxLocal.scale(ƒ.Vector3.ONE(12));
@@ -94,7 +94,7 @@ namespace Script {
     }
 
     die(): void {
-      console.log("You Died!");
+      // console.log("You Died!");
       GameStateMachine.getInstance().transit(GameState.Defeat);
       this.removeEventListener("Damage", this.takeDamage);
       // this.activate(false);
@@ -103,7 +103,7 @@ namespace Script {
     public takeDamage(_event: CustomEvent): void {
       super.takeDamage(_event);
       this.gui.health = this.health;
-      console.log("Flame takes damage");
+      // console.log("Flame takes damage");
 
       if (!this.hasIFrames) {
         this.startIFrames(_event.detail._sourcePower * 1000);
@@ -190,7 +190,7 @@ namespace Script {
           this.spriteNode.setAnimation(<ƒAid.SpriteSheetAnimation>this.animations.leftUp);
           break;
         default:
-          console.log("no valid Frame");
+          // console.log("no valid Frame");
           break;
       }
     }
@@ -201,6 +201,10 @@ namespace Script {
       this.health += _healthDifference;
       this.power += _powerDifference;
       this.attackCooldown += _cooldownDifference;
+      if (_healthDifference != 0) {
+        this.gui.adjustMaxHealth(_healthDifference);
+        this.gui.health = this.health;
+      }
     }
 
     unveil(): void {

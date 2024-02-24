@@ -64,6 +64,20 @@
         "Octo",
         "Goriya"
       ]
+    },
+    "3": {
+      "enemyCount": 50,
+      "enemyType": [
+        "Octo",
+        "Goriya"
+      ]
+    },
+    "4": {
+      "enemyCount": 100,
+      "enemyType": [
+        "Octo",
+        "Goriya"
+      ]
     }
   },
   "arena": {

@@ -10,9 +10,11 @@ namespace Script {
     // need to use same name as key in elements
     public health: number;
     public enemyCounter: number;
+    private UIElement: HTMLElement;
 
     public constructor(_type: GUIType, _value: number) {
       super();
+      this.UIElement = document.querySelector("div#vui");
       switch (_type) {
         case GUIType.Health:
           this.health = _value;
@@ -24,15 +26,20 @@ namespace Script {
         default:
           break;
       }
-      let UI: HTMLElement = document.querySelector("div#vui");
-      UI.hidden = false;
+      this.UIElement.hidden = false;
       console.log("connect GUI");
 
-      new ƒUI.Controller(this, UI);
+      new ƒUI.Controller(this, this.UIElement);
     }
 
     protected reduceMutator(_mutator: ƒ.Mutator): void {/* */ }
 
+    public adjustMaxHealth(_amount: number): void {
+      let healthElement: HTMLInputElement = this.UIElement.querySelector('input[key="health"]');
+      let healthMax: number = Number(healthElement.max);
+      healthMax += _amount;
+      healthElement.max = healthMax.toString();
+    }
     /**
      * updateUI
      */

@@ -77,6 +77,7 @@ namespace Script {
       let flamePos: ƒ.Vector2 = flame.mtxLocal.translation.toVector2();
       this.targetDirection = Math.round(randomNumber(-0.49, 3.49));
       let targetDistanceToFlame: number = randomNumber(6, 10);
+      this.mtxLocal.rotation = ƒ.Vector3.ZERO();
       switch (this.targetDirection) {
         case Direction.Up:
           this.target = ƒ.Vector2.SUM(flamePos, ƒ.Vector2.Y(-targetDistanceToFlame));
@@ -94,10 +95,14 @@ namespace Script {
           console.error("No valid target Direction for Goriya!");
           break;
       }
+      if (this.isUnveiled) {
+        this.chooseAnimation();
+      }
     }
 
     private transitToIdle = (_machine: ƒAid.ComponentStateMachine<GoriyaState>): void => {
       this.idleTimer = 0;
+      this.mtxLocal.rotation = ƒ.Vector3.ZERO();
     }
 
     private actIdle = (_machine: ƒAid.ComponentStateMachine<GoriyaState>): void => {
@@ -171,7 +176,41 @@ namespace Script {
     protected unveil(): void {
       this.removeEventListener("enemyIsClose", this.unveil);
       this.isUnveiled = true;
-      this.spriteNode.setAnimation(<ƒAid.SpriteSheetAnimation>this.animations.side)
+      if (this.cmpStateMachine.stateCurrent == GoriyaState.Move) { this.chooseAnimation(); }
+      else {
+        this.spriteNode.setAnimation(<ƒAid.SpriteSheetAnimation>this.animations.down);
+        this.currentMoveAnimationDirection = Direction.Down;
+      }
+    }
+
+    private chooseAnimation(): void {
+      let vectorToTarget: ƒ.Vector2 = ƒ.Vector2.DIFFERENCE(this.target, this.mtxLocal.translation.toVector2());
+      if (getAmount(vectorToTarget.y) > getAmount(vectorToTarget.x)) {
+        if (vectorToTarget.y > 0 && this.currentMoveAnimationDirection != Direction.Up) {
+          // move up
+          this.spriteNode.setAnimation(<ƒAid.SpriteSheetAnimation>this.animations.up)
+          this.currentMoveAnimationDirection = Direction.Up;
+        }
+      }
+      else if (getAmount(vectorToTarget.x) > getAmount(vectorToTarget.y)) {
+        if (vectorToTarget.x < 0 && this.currentMoveAnimationDirection != Direction.Left) {
+          // move left
+          this.spriteNode.setAnimation(<ƒAid.SpriteSheetAnimation>this.animations.side);
+          this.currentMoveAnimationDirection = Direction.Left;
+          // turn sprite
+          this.spriteNode.mtxLocal.rotation = ƒ.Vector3.Y(180);
+        }
+        else if (vectorToTarget.x > 0 && this.currentMoveAnimationDirection != Direction.Right) {
+          // move right
+          this.spriteNode.setAnimation(<ƒAid.SpriteSheetAnimation>this.animations.side);
+          this.currentMoveAnimationDirection = Direction.Right;
+          // die schauen trotzdem nach links?
+        }
+      }
+      else if (this.currentMoveAnimationDirection != Direction.Down) {
+        this.spriteNode.setAnimation(<ƒAid.SpriteSheetAnimation>this.animations.down)
+        this.currentMoveAnimationDirection = Direction.Down;
+      }
     }
 
     public update(_deltaTime: number): void {
@@ -179,31 +218,6 @@ namespace Script {
       // console.log("Current Goriya State", this.cmpStateMachine.stateCurrent);
 
       // this.move(_deltaTime);
-
-      if (this.isUnveiled && this.velocity.magnitude > 0.1) {
-        if (this.velocity.y > 0 && this.velocity.y > getAmount(this.velocity.x) && this.currentMoveAnimationDirection != Direction.Up) {
-          // move up
-          this.currentMoveAnimationDirection = Direction.Up;
-          this.spriteNode.setAnimation(<ƒAid.SpriteSheetAnimation>this.animations.up)
-        }
-        else if (this.velocity.y <= 0 && getAmount(this.velocity.y) > getAmount(this.velocity.x) && this.currentMoveAnimationDirection != Direction.Down) {
-          // move down
-          this.currentMoveAnimationDirection = Direction.Down;
-          this.spriteNode.setAnimation(<ƒAid.SpriteSheetAnimation>this.animations.down)
-        }
-        else if (this.velocity.x < 0 && this.currentMoveAnimationDirection != Direction.Left) {
-          // move left
-          this.currentMoveAnimationDirection = Direction.Left;
-          this.spriteNode.setAnimation(<ƒAid.SpriteSheetAnimation>this.animations.side);
-          // turn sprite
-          this.spriteNode.mtxLocal.rotation = ƒ.Vector3.Y(180);
-        }
-        else if (this.currentMoveAnimationDirection != Direction.Right) {
-          // move right
-          this.currentMoveAnimationDirection = Direction.Right;
-          this.spriteNode.setAnimation(<ƒAid.SpriteSheetAnimation>this.animations.side)
-        }
-      }
     }
 
     protected async initializeAnimations(): Promise<void> {

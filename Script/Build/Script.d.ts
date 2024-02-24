@@ -180,8 +180,10 @@ declare namespace Script {
     class GUI extends ƒ.Mutable {
         health: number;
         enemyCounter: number;
+        private UIElement;
         constructor(_type: GUIType, _value: number);
         protected reduceMutator(_mutator: ƒ.Mutator): void;
+        adjustMaxHealth(_amount: number): void;
     }
 }
 declare namespace Script {
@@ -244,6 +246,7 @@ declare namespace Script {
         protected attack(_event?: Event | KeyboardEvent): void;
         die(): void;
         protected unveil(): void;
+        private chooseAnimation;
         update(_deltaTime: number): void;
         protected initializeAnimations(): Promise<void>;
     }

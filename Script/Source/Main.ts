@@ -46,17 +46,17 @@ namespace Script {
   async function startInteractiveViewport(_graphId: string): Promise<void> {
     // load resources referenced in the link-tag
     await ƒ.Project.loadResourcesFromHTML();
-    ƒ.Debug.log("Project:", ƒ.Project.resources);
+    // ƒ.Debug.log("Project:", ƒ.Project.resources);
 
     config = await (await fetch("./config.json")).json();
-    console.log(config.control);
+    // console.log(config.control);
     arenaDimension = new ƒ.Vector2(config.arena.dimensionX, config.arena.dimensionY);
     floorTileSrc = config.arena.floorTextureSource;
     Goriya.setFireballSrc(config.enemies.goriya.fireballTextureSrc);
 
     // get the graph to show from loaded resources
     let graph: ƒ.Graph = <ƒ.Graph>ƒ.Project.resources[_graphId];
-    ƒ.Debug.log("Graph:", graph);
+    // ƒ.Debug.log("Graph:", graph);
     if (!graph) {
       alert("Nothing to render. Create a graph with at least a mesh, material and probably some light");
       return;
@@ -75,7 +75,7 @@ namespace Script {
     let canvas: HTMLCanvasElement = document.querySelector("canvas");
     viewport = new ƒ.Viewport();
     viewport.initialize("InteractiveViewport", graph, cmpCamera, canvas);
-    ƒ.Debug.log("Viewport:", viewport);
+    // ƒ.Debug.log("Viewport:", viewport);
     branch = viewport.getBranch();
 
     // add Audio
@@ -83,7 +83,7 @@ namespace Script {
     camNode.addComponent(cmpAudioListener);
     ƒ.AudioManager.default.listenWith(cmpAudioListener);
     ƒ.AudioManager.default.listenTo(branch);
-    ƒ.Debug.log("Audio:", ƒ.AudioManager.default);
+    // ƒ.Debug.log("Audio:", ƒ.AudioManager.default);
 
     // hide the cursor when interacting, also suppressing right-click menu
     canvas.addEventListener("mousedown", canvas.requestPointerLock);
@@ -201,7 +201,7 @@ namespace Script {
           let powerUp: AttributeUp = powerUpNode.getComponent(AttributeUp);
           flame.changeAttributes(powerUp.getPowerBoost[0], powerUp.getPowerBoost[1],
             powerUp.getPowerBoost[2], powerUp.getPowerBoost[3]);
-          console.log(powerUp.getPowerBoost);
+          // console.log(powerUp.getPowerBoost);
           hdlDestruction(powerUpNode, powerUps);
         }
       }
@@ -210,7 +210,7 @@ namespace Script {
 
   function stopLoop(_event: KeyboardEvent): void {
     if (_event.key == "p") {
-      console.log("P pressed for pause, press o to continue");
+      // console.log("P pressed for pause, press o to continue");
       ƒ.Loop.stop();
     }
     if (_event.key == "o") {
@@ -227,9 +227,9 @@ namespace Script {
     branch.removeChild(_creation);
     for (let i = 0; i < _array.length; i++) {
       if (_creation == _array[i]) {
-        console.log(_array);
+        // console.log(_array);
         _array = _array.splice(i, 1);
-        console.log(_array);
+        // console.log(_array);
       }
     }
     counterGUI.enemyCounter = entities.length;
@@ -275,7 +275,7 @@ namespace Script {
   }
 
   function hdlPowerUpCreation(_event: CustomEvent): void {
-    console.log("create Power Up");
+    // console.log("create Power Up");
 
     let powerUp: ƒ.Node = new ƒ.Node("PowerUp" + powerUps.length);
     powerUp.addComponent(new ƒ.ComponentTransform());

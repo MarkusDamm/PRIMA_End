@@ -42,7 +42,7 @@ namespace Script {
       if (this.health <= 0) {
         this.die();
       }
-      console.log(this.health);
+      // console.log(this.health);
     }
   }
 }

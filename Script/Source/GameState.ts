@@ -24,8 +24,8 @@ namespace Script {
       this.instructions = GameStateMachine.instructions;
       this.stages = config.stages;
       this.currentStage = this.frameCounter = 0;
-      console.log("Stages and Current Stage");
-      console.log(this.stages, this.stages[this.currentStage]);
+      // console.log("Stages and Current Stage");
+      // console.log(this.stages, this.stages[this.currentStage]);
 
       // Don't start when running in editor
       if (ƒ.Project.mode == ƒ.MODE.EDITOR)

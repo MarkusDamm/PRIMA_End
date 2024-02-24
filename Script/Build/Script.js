@@ -245,15 +245,15 @@ var Script;
     async function startInteractiveViewport(_graphId) {
         // load resources referenced in the link-tag
         await ƒ.Project.loadResourcesFromHTML();
-        ƒ.Debug.log("Project:", ƒ.Project.resources);
+        // ƒ.Debug.log("Project:", ƒ.Project.resources);
         Script.config = await (await fetch("./config.json")).json();
-        console.log(Script.config.control);
+        // console.log(config.control);
         arenaDimension = new ƒ.Vector2(Script.config.arena.dimensionX, Script.config.arena.dimensionY);
         floorTileSrc = Script.config.arena.floorTextureSource;
         Script.Goriya.setFireballSrc(Script.config.enemies.goriya.fireballTextureSrc);
         // get the graph to show from loaded resources
         let graph = ƒ.Project.resources[_graphId];
-        ƒ.Debug.log("Graph:", graph);
+        // ƒ.Debug.log("Graph:", graph);
         if (!graph) {
             alert("Nothing to render. Create a graph with at least a mesh, material and probably some light");
             return;
@@ -269,14 +269,14 @@ var Script;
         let canvas = document.querySelector("canvas");
         viewport = new ƒ.Viewport();
         viewport.initialize("InteractiveViewport", graph, cmpCamera, canvas);
-        ƒ.Debug.log("Viewport:", viewport);
+        // ƒ.Debug.log("Viewport:", viewport);
         branch = viewport.getBranch();
         // add Audio
         let cmpAudioListener = new ƒ.ComponentAudioListener();
         Script.camNode.addComponent(cmpAudioListener);
         ƒ.AudioManager.default.listenWith(cmpAudioListener);
         ƒ.AudioManager.default.listenTo(branch);
-        ƒ.Debug.log("Audio:", ƒ.AudioManager.default);
+        // ƒ.Debug.log("Audio:", ƒ.AudioManager.default);
         // hide the cursor when interacting, also suppressing right-click menu
         canvas.addEventListener("mousedown", canvas.requestPointerLock);
         canvas.addEventListener("mouseup", function () { document.exitPointerLock(); });
@@ -379,7 +379,7 @@ var Script;
                 if (dimensions.x > posDifference.x && dimensions.y > posDifference.y) {
                     let powerUp = powerUpNode.getComponent(Script.AttributeUp);
                     Script.flame.changeAttributes(powerUp.getPowerBoost[0], powerUp.getPowerBoost[1], powerUp.getPowerBoost[2], powerUp.getPowerBoost[3]);
-                    console.log(powerUp.getPowerBoost);
+                    // console.log(powerUp.getPowerBoost);
                     hdlDestruction(powerUpNode, Script.powerUps);
                 }
             }
@@ -387,7 +387,7 @@ var Script;
     }
     function stopLoop(_event) {
         if (_event.key == "p") {
-            console.log("P pressed for pause, press o to continue");
+            // console.log("P pressed for pause, press o to continue");
             ƒ.Loop.stop();
         }
         if (_event.key == "o") {
@@ -403,9 +403,9 @@ var Script;
         branch.removeChild(_creation);
         for (let i = 0; i < _array.length; i++) {
             if (_creation == _array[i]) {
-                console.log(_array);
+                // console.log(_array);
                 _array = _array.splice(i, 1);
-                console.log(_array);
+                // console.log(_array);
             }
         }
         Script.counterGUI.enemyCounter = Script.entities.length;
@@ -450,7 +450,7 @@ var Script;
     }
     Script.getAmount = getAmount;
     function hdlPowerUpCreation(_event) {
-        console.log("create Power Up");
+        // console.log("create Power Up");
         let powerUp = new ƒ.Node("PowerUp" + Script.powerUps.length);
         powerUp.addComponent(new ƒ.ComponentTransform());
         powerUp.mtxLocal.translation = _event.detail._sourcePos;
@@ -489,7 +489,7 @@ var Script;
             if (this.health <= 0) {
                 this.die();
             }
-            console.log(this.health);
+            // console.log(this.health);
         }
     }
     Script.Entity = Entity;
@@ -544,7 +544,7 @@ var Script;
                 }
             };
             this.attackCooldown = Script.config.player.attackCooldown;
-            console.log("Health: " + this.health);
+            // console.log("Health: " + this.health);
             this.gui = new Script.GUI(Script.GUIType.Health, this.health);
             this.addEventListener("Damage", this.takeDamage.bind(this));
             // add light
@@ -552,8 +552,8 @@ var Script;
             this.lightNode.addComponent(new ƒ.ComponentTransform);
             let light = new ƒ.LightPoint(ƒ.Color.CSS("white"));
             let cmpLight = new ƒ.ComponentLight(light);
-            cmpLight.mtxPivot.translateZ(-2);
-            cmpLight.mtxPivot.scale(ƒ.Vector3.ONE(12));
+            cmpLight.mtxPivot.translateZ(1);
+            cmpLight.mtxPivot.scale(ƒ.Vector3.ONE(6));
             this.addComponent(cmpLight);
             // this.lightNode.addComponent(cmpLight);
             // this.lightNode.mtxLocal.scale(ƒ.Vector3.ONE(12));
@@ -573,7 +573,7 @@ var Script;
             this.mtxLocal.translate(this.velocity.toVector3());
         }
         die() {
-            console.log("You Died!");
+            // console.log("You Died!");
             Script.GameStateMachine.getInstance().transit(Script.GameState.Defeat);
             this.removeEventListener("Damage", this.takeDamage);
             // this.activate(false);
@@ -581,7 +581,7 @@ var Script;
         takeDamage(_event) {
             super.takeDamage(_event);
             this.gui.health = this.health;
-            console.log("Flame takes damage");
+            // console.log("Flame takes damage");
             if (!this.hasIFrames) {
                 this.startIFrames(_event.detail._sourcePower * 1000);
             }
@@ -658,7 +658,7 @@ var Script;
                     this.spriteNode.setAnimation(this.animations.leftUp);
                     break;
                 default:
-                    console.log("no valid Frame");
+                    // console.log("no valid Frame");
                     break;
             }
         }
@@ -668,6 +668,10 @@ var Script;
             this.health += _healthDifference;
             this.power += _powerDifference;
             this.attackCooldown += _cooldownDifference;
+            if (_healthDifference != 0) {
+                this.gui.adjustMaxHealth(_healthDifference);
+                this.gui.health = this.health;
+            }
         }
         unveil() {
             // propably useless here
@@ -688,6 +692,7 @@ var Script;
     class GUI extends ƒ.Mutable {
         constructor(_type, _value) {
             super();
+            this.UIElement = document.querySelector("div#vui");
             switch (_type) {
                 case GUIType.Health:
                     this.health = _value;
@@ -698,12 +703,17 @@ var Script;
                 default:
                     break;
             }
-            let UI = document.querySelector("div#vui");
-            UI.hidden = false;
+            this.UIElement.hidden = false;
             console.log("connect GUI");
-            new ƒUI.Controller(this, UI);
+            new ƒUI.Controller(this, this.UIElement);
         }
         reduceMutator(_mutator) { }
+        adjustMaxHealth(_amount) {
+            let healthElement = this.UIElement.querySelector('input[key="health"]');
+            let healthMax = Number(healthElement.max);
+            healthMax += _amount;
+            healthElement.max = healthMax.toString();
+        }
     }
     Script.GUI = GUI;
 })(Script || (Script = {}));
@@ -727,8 +737,8 @@ var Script;
             this.instructions = GameStateMachine.instructions;
             this.stages = Script.config.stages;
             this.currentStage = this.frameCounter = 0;
-            console.log("Stages and Current Stage");
-            console.log(this.stages, this.stages[this.currentStage]);
+            // console.log("Stages and Current Stage");
+            // console.log(this.stages, this.stages[this.currentStage]);
             // Don't start when running in editor
             if (ƒ.Project.mode == ƒ.MODE.EDITOR)
                 return;
@@ -863,6 +873,7 @@ var Script;
                 let flamePos = Script.flame.mtxLocal.translation.toVector2();
                 this.targetDirection = Math.round(Script.randomNumber(-0.49, 3.49));
                 let targetDistanceToFlame = Script.randomNumber(6, 10);
+                this.mtxLocal.rotation = ƒ.Vector3.ZERO();
                 switch (this.targetDirection) {
                     case Direction.Up:
                         this.target = ƒ.Vector2.SUM(flamePos, ƒ.Vector2.Y(-targetDistanceToFlame));
@@ -880,9 +891,13 @@ var Script;
                         console.error("No valid target Direction for Goriya!");
                         break;
                 }
+                if (this.isUnveiled) {
+                    this.chooseAnimation();
+                }
             };
             this.transitToIdle = (_machine) => {
                 this.idleTimer = 0;
+                this.mtxLocal.rotation = ƒ.Vector3.ZERO();
             };
             this.actIdle = (_machine) => {
                 this.idleTimer++;
@@ -984,36 +999,47 @@ var Script;
         unveil() {
             this.removeEventListener("enemyIsClose", this.unveil);
             this.isUnveiled = true;
-            this.spriteNode.setAnimation(this.animations.side);
+            if (this.cmpStateMachine.stateCurrent == GoriyaState.Move) {
+                this.chooseAnimation();
+            }
+            else {
+                this.spriteNode.setAnimation(this.animations.down);
+                this.currentMoveAnimationDirection = Direction.Down;
+            }
+        }
+        chooseAnimation() {
+            let vectorToTarget = ƒ.Vector2.DIFFERENCE(this.target, this.mtxLocal.translation.toVector2());
+            if (Script.getAmount(vectorToTarget.y) > Script.getAmount(vectorToTarget.x)) {
+                if (vectorToTarget.y > 0 && this.currentMoveAnimationDirection != Direction.Up) {
+                    // move up
+                    this.spriteNode.setAnimation(this.animations.up);
+                    this.currentMoveAnimationDirection = Direction.Up;
+                }
+            }
+            else if (Script.getAmount(vectorToTarget.x) > Script.getAmount(vectorToTarget.y)) {
+                if (vectorToTarget.x < 0 && this.currentMoveAnimationDirection != Direction.Left) {
+                    // move left
+                    this.spriteNode.setAnimation(this.animations.side);
+                    this.currentMoveAnimationDirection = Direction.Left;
+                    // turn sprite
+                    this.spriteNode.mtxLocal.rotation = ƒ.Vector3.Y(180);
+                }
+                else if (vectorToTarget.x > 0 && this.currentMoveAnimationDirection != Direction.Right) {
+                    // move right
+                    this.spriteNode.setAnimation(this.animations.side);
+                    this.currentMoveAnimationDirection = Direction.Right;
+                    // die schauen trotzdem nach links?
+                }
+            }
+            else if (this.currentMoveAnimationDirection != Direction.Down) {
+                this.spriteNode.setAnimation(this.animations.down);
+                this.currentMoveAnimationDirection = Direction.Down;
+            }
         }
         update(_deltaTime) {
             this.cmpStateMachine.act();
             // console.log("Current Goriya State", this.cmpStateMachine.stateCurrent);
             // this.move(_deltaTime);
-            if (this.isUnveiled && this.velocity.magnitude > 0.1) {
-                if (this.velocity.y > 0 && this.velocity.y > Script.getAmount(this.velocity.x) && this.currentMoveAnimationDirection != Direction.Up) {
-                    // move up
-                    this.currentMoveAnimationDirection = Direction.Up;
-                    this.spriteNode.setAnimation(this.animations.up);
-                }
-                else if (this.velocity.y <= 0 && Script.getAmount(this.velocity.y) > Script.getAmount(this.velocity.x) && this.currentMoveAnimationDirection != Direction.Down) {
-                    // move down
-                    this.currentMoveAnimationDirection = Direction.Down;
-                    this.spriteNode.setAnimation(this.animations.down);
-                }
-                else if (this.velocity.x < 0 && this.currentMoveAnimationDirection != Direction.Left) {
-                    // move left
-                    this.currentMoveAnimationDirection = Direction.Left;
-                    this.spriteNode.setAnimation(this.animations.side);
-                    // turn sprite
-                    this.spriteNode.mtxLocal.rotation = ƒ.Vector3.Y(180);
-                }
-                else if (this.currentMoveAnimationDirection != Direction.Right) {
-                    // move right
-                    this.currentMoveAnimationDirection = Direction.Right;
-                    this.spriteNode.setAnimation(this.animations.side);
-                }
-            }
         }
         async initializeAnimations() {
             let rectangles = { "hidden": [0, 0, 22, 25] };
