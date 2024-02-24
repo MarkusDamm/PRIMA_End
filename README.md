@@ -1,16 +1,22 @@
 # Flame
 by Markus Damm
+
 MKB 7
+
 Winter 2023/2024
 
 Created in the course PRIMA from Prof. Jirka Dell'Oro-Friedl at Furtwangen University.
 
-[Play here](MarkusDamm.github.io/PRIMA_End/index.html)
-[Code is here](github.com/MarkusDamm/PRIMA_End/tree/master/Script/Source)
-[The Documentation](https://github.com/MarkusDamm/PRIMA_End/blob/master/Documentation/DesignDoc.pdf)
+### [Play here](MarkusDamm.github.io/PRIMA_End/index.html)
 
-Controls:
+### [Code is here](github.com/MarkusDamm/PRIMA_End/tree/master/Script/Source)
+
+### [The Documentation](https://github.com/MarkusDamm/PRIMA_End/blob/master/Documentation/DesignDoc.pdf)
+
+## Controls:
+
 W A S D to move
+
 Arrow-Keys to fireball
 
 ## Checklist for the final assignment
