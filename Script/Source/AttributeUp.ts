@@ -51,7 +51,7 @@ namespace Script {
           break;
       }
       let coat: ƒ.CoatRemissiveTextured = new ƒ.CoatRemissiveTextured(ƒ.Color.CSS("white"), texture);
-      let mat: ƒ.Material = new ƒ.Material("TileMaterial", ƒ.ShaderLitTextured, coat);
+      let mat: ƒ.Material = new ƒ.Material("TileMaterial", ƒ.ShaderPhongTextured, coat);
       this.node.addComponent(new ƒ.ComponentMaterial(mat));
       cmpMat.material = mat;
     }

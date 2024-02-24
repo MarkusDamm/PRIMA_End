@@ -37,12 +37,12 @@ namespace Script {
       this.lightNode.addComponent(new ƒ.ComponentTransform);
       let light: ƒ.Light = new ƒ.LightPoint(ƒ.Color.CSS("white"));
       let cmpLight: ƒ.ComponentLight = new ƒ.ComponentLight(light);
-      cmpLight.mtxPivot.translateZ(1);
-      cmpLight.mtxPivot.scale(ƒ.Vector3.ONE(6));
       this.addComponent(cmpLight);
+      cmpLight.mtxPivot.translateZ(-2);
+      cmpLight.mtxPivot.scale(ƒ.Vector3.ONE(10));
       // this.lightNode.addComponent(cmpLight);
       // this.lightNode.mtxLocal.scale(ƒ.Vector3.ONE(12));
-      // this.appendChild(this.lightNode);
+      this.appendChild(this.lightNode);
 
       this.hitTimeout = { timeoutID: 0, duration: 0 };
       this.initializeAnimations();

@@ -2,7 +2,7 @@
 namespace Script {
 
   export class Projectile extends TexturedMoveable {
-    private soundSrc: string = "./Sounds/explosion.wav";
+    private static soundSrc: string = "./Sounds/explosion.wav";
     private cmpAudio: ƒ.ComponentAudio;
     private spriteDimensions: ƒ.Vector2;
     private frameCount: number;
@@ -32,20 +32,23 @@ namespace Script {
       this.power = _power;
 
       // add Audio Source
-      let explosionAudio: ƒ.Audio = new ƒ.Audio(this.soundSrc);
+      let explosionAudio: ƒ.Audio = new ƒ.Audio(Projectile.soundSrc);
       this.cmpAudio = new ƒ.ComponentAudio(explosionAudio, false, false);
       this.addComponent(this.cmpAudio);
       this.cmpAudio.volume += 5;
       this.cmpAudio.setPanner(ƒ.AUDIO_PANNER.CONE_INNER_ANGLE, 360);
 
       // add light
-      let lightNode: ƒ.Node = new ƒ.Node("FlameLight");
-      lightNode.addComponent(new ƒ.ComponentTransform);
+      // let lightNode: ƒ.Node = new ƒ.Node("FlameLight");
+      // lightNode.addComponent(new ƒ.ComponentTransform);
       let light: ƒ.Light = new ƒ.LightPoint(ƒ.Color.CSS("white"));
       let cmpLight: ƒ.ComponentLight = new ƒ.ComponentLight(light);
-      lightNode.addComponent(cmpLight);
-      lightNode.mtxLocal.scale(ƒ.Vector3.ONE(5));
-      this.appendChild(lightNode);
+      this.addComponent(cmpLight);
+      cmpLight.mtxPivot.translateZ(-2);
+      cmpLight.mtxPivot.scale(ƒ.Vector3.ONE(6))
+      // lightNode.addComponent(cmpLight);
+      // lightNode.mtxLocal.scale(ƒ.Vector3.ONE(5));
+      // this.appendChild(lightNode);
 
       this.initializeAnimations();
     }

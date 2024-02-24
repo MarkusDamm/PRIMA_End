@@ -273,7 +273,7 @@ declare namespace Script {
 }
 declare namespace Script {
     class Projectile extends TexturedMoveable {
-        private soundSrc;
+        private static soundSrc;
         private cmpAudio;
         private spriteDimensions;
         private frameCount;

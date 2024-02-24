@@ -1,4 +1,5 @@
 namespace Script {
+  // cut content
   // enum Direction { Up, Down, Right, Left }
 /*
   export class Particle extends TexturedMoveable {

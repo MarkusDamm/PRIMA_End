@@ -47,7 +47,7 @@ var Script;
                     break;
             }
             let coat = new ƒ.CoatRemissiveTextured(ƒ.Color.CSS("white"), texture);
-            let mat = new ƒ.Material("TileMaterial", ƒ.ShaderLitTextured, coat);
+            let mat = new ƒ.Material("TileMaterial", ƒ.ShaderPhongTextured, coat);
             this.node.addComponent(new ƒ.ComponentMaterial(mat));
             cmpMat.material = mat;
         }
@@ -552,12 +552,12 @@ var Script;
             this.lightNode.addComponent(new ƒ.ComponentTransform);
             let light = new ƒ.LightPoint(ƒ.Color.CSS("white"));
             let cmpLight = new ƒ.ComponentLight(light);
-            cmpLight.mtxPivot.translateZ(1);
-            cmpLight.mtxPivot.scale(ƒ.Vector3.ONE(6));
             this.addComponent(cmpLight);
+            cmpLight.mtxPivot.translateZ(-2);
+            cmpLight.mtxPivot.scale(ƒ.Vector3.ONE(10));
             // this.lightNode.addComponent(cmpLight);
             // this.lightNode.mtxLocal.scale(ƒ.Vector3.ONE(12));
-            // this.appendChild(this.lightNode);
+            this.appendChild(this.lightNode);
             this.hitTimeout = { timeoutID: 0, duration: 0 };
             this.initializeAnimations();
         }
@@ -1136,7 +1136,6 @@ var Script;
     class Projectile extends Script.TexturedMoveable {
         constructor(_position, _direction, _affinity, _power, _spriteSource = "./Images/Fireball16x16.png", _spriteSize = new ƒ.Vector2(16, 16), _frameCount = 1) {
             super("Projectile", "ProjectileSprite", _spriteSize);
-            this.soundSrc = "./Sounds/explosion.wav";
             this.animations = {};
             this.speed = 3;
             this.mtxLocal.translate(_position);
@@ -1150,19 +1149,22 @@ var Script;
             this.frameCount = _frameCount;
             this.power = _power;
             // add Audio Source
-            let explosionAudio = new ƒ.Audio(this.soundSrc);
+            let explosionAudio = new ƒ.Audio(Projectile.soundSrc);
             this.cmpAudio = new ƒ.ComponentAudio(explosionAudio, false, false);
             this.addComponent(this.cmpAudio);
             this.cmpAudio.volume += 5;
             this.cmpAudio.setPanner(ƒ.AUDIO_PANNER.CONE_INNER_ANGLE, 360);
             // add light
-            let lightNode = new ƒ.Node("FlameLight");
-            lightNode.addComponent(new ƒ.ComponentTransform);
+            // let lightNode: ƒ.Node = new ƒ.Node("FlameLight");
+            // lightNode.addComponent(new ƒ.ComponentTransform);
             let light = new ƒ.LightPoint(ƒ.Color.CSS("white"));
             let cmpLight = new ƒ.ComponentLight(light);
-            lightNode.addComponent(cmpLight);
-            lightNode.mtxLocal.scale(ƒ.Vector3.ONE(5));
-            this.appendChild(lightNode);
+            this.addComponent(cmpLight);
+            cmpLight.mtxPivot.translateZ(-2);
+            cmpLight.mtxPivot.scale(ƒ.Vector3.ONE(6));
+            // lightNode.addComponent(cmpLight);
+            // lightNode.mtxLocal.scale(ƒ.Vector3.ONE(5));
+            // this.appendChild(lightNode);
             this.initializeAnimations();
         }
         adjustSprite(_direction) {
@@ -1273,6 +1275,7 @@ var Script;
             this.state = Script.State.Idle;
         }
     }
+    Projectile.soundSrc = "./Sounds/explosion.wav";
     Script.Projectile = Projectile;
 })(Script || (Script = {}));
 //# sourceMappingURL=Script.js.map
