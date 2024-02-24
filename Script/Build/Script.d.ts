@@ -225,6 +225,7 @@ declare namespace Script {
         protected health: number;
         private static fireballSpriteSrc;
         private isAttackReady;
+        private powerUpChance;
         private idleTimer;
         private static idleTimeout;
         private target;
@@ -251,6 +252,7 @@ declare namespace Script {
     class Octo extends Entity {
         readonly affinity = Affinity.Enemy;
         protected hasIFrames: boolean;
+        private powerUpChance;
         private target;
         private targetUpdateTimeout;
         constructor(_spawnPosition: ƒ.Vector3, _data: any);

@@ -8,6 +8,7 @@ namespace Script {
     public readonly affinity = Affinity.Enemy;
     protected hasIFrames: boolean = false;
 
+    private powerUpChance: number;
     private target: ƒ.Vector2;
     private targetUpdateTimeout: Timeout;
 
@@ -18,6 +19,7 @@ namespace Script {
       // console.log("Health: ", this.health, "; Power: ", this.power, " Speed: ", this.speed);
       this.addEventListener("Damage", this.takeDamage.bind(this));
       this.addEventListener("enemyIsClose", this.unveil.bind(this));
+      this.powerUpChance = _data.powerUpChance;
 
       this.mtxLocal.translate(_spawnPosition);
       this.targetUpdateTimeout = { timeoutID: 0, duration: 0 };
@@ -57,7 +59,7 @@ namespace Script {
 
     die(): void {
       let randomNumber: number = Math.random();
-      if (randomNumber < 0.3) {
+      if (randomNumber < this.powerUpChance) {
         let powerUpEvent: CustomEvent = new CustomEvent("createPowerUp", {
           bubbles: true, detail: { _sourcePos: this.mtxLocal.translation }
         })

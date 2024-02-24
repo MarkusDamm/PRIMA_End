@@ -20,6 +20,7 @@ namespace Script {
     protected health: number = 10;
     private static fireballSpriteSrc: string;
     private isAttackReady: boolean;
+    private powerUpChance: number;
     private idleTimer: number;
     private static idleTimeout: number = 150;
     private target: ƒ.Vector2;
@@ -39,6 +40,7 @@ namespace Script {
       this.velocity = new ƒ.Vector2(0, 0);
       this.target = ƒ.Vector2.ZERO();
       this.isUnveiled = false;
+      this.powerUpChance = _data.powerUpChance;
       this.idleTimer = 0;
       this.isAttackReady = true;
       this.currentMoveAnimationDirection = Direction.None;
@@ -157,7 +159,7 @@ namespace Script {
 
     die(): void {
       let randomNumber: number = Math.random();
-      if (randomNumber < 0.8) {
+      if (randomNumber < this.powerUpChance) {
         let powerUpEvent: CustomEvent = new CustomEvent("createPowerUp", {
           bubbles: true, detail: { _sourcePos: this.mtxLocal.translation }
         })

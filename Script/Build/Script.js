@@ -941,6 +941,7 @@ var Script;
             this.velocity = new ƒ.Vector2(0, 0);
             this.target = ƒ.Vector2.ZERO();
             this.isUnveiled = false;
+            this.powerUpChance = _data.powerUpChance;
             this.idleTimer = 0;
             this.isAttackReady = true;
             this.currentMoveAnimationDirection = Direction.None;
@@ -972,7 +973,7 @@ var Script;
         }
         die() {
             let randomNumber = Math.random();
-            if (randomNumber < 0.8) {
+            if (randomNumber < this.powerUpChance) {
                 let powerUpEvent = new CustomEvent("createPowerUp", {
                     bubbles: true, detail: { _sourcePos: this.mtxLocal.translation }
                 });
@@ -1049,6 +1050,7 @@ var Script;
             // console.log("Health: ", this.health, "; Power: ", this.power, " Speed: ", this.speed);
             this.addEventListener("Damage", this.takeDamage.bind(this));
             this.addEventListener("enemyIsClose", this.unveil.bind(this));
+            this.powerUpChance = _data.powerUpChance;
             this.mtxLocal.translate(_spawnPosition);
             this.targetUpdateTimeout = { timeoutID: 0, duration: 0 };
             this.updateTarget();
@@ -1079,7 +1081,7 @@ var Script;
         }
         die() {
             let randomNumber = Math.random();
-            if (randomNumber < 0.3) {
+            if (randomNumber < this.powerUpChance) {
                 let powerUpEvent = new CustomEvent("createPowerUp", {
                     bubbles: true, detail: { _sourcePos: this.mtxLocal.translation }
                 });
