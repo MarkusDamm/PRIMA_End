@@ -29,21 +29,21 @@ namespace Script {
 
     public get getPowerBoost(): number[] { return this.powerBoost }
 
-    private setupNode(_event: Event): void {
+    private async setupNode(_event: Event): Promise<void> {
       let cmpMat: ƒ.ComponentMaterial = this.node.getComponent(ƒ.ComponentMaterial);
       let texture: ƒ.TextureImage = new ƒ.TextureImage();
       switch (this.boostKind) {
         case BoostKind.Speed:
-          texture.load(AttributeUp.speedTextureSource);
+          await texture.load(AttributeUp.speedTextureSource);
           break;
         case BoostKind.Health:
-          texture.load(AttributeUp.healthTextureSource);
+          await texture.load(AttributeUp.healthTextureSource);
           break;
         case BoostKind.Power:
-          texture.load(AttributeUp.powerTextureSource);
+          await texture.load(AttributeUp.powerTextureSource);
           break;
         case BoostKind.AttackSpeed:
-          texture.load(AttributeUp.attackSpeedTextureSource);
+          await texture.load(AttributeUp.attackSpeedTextureSource);
           this.powerBoost[this.boostKind] = -50; // generic number for reducing the time between attacks
           break;
         default:
@@ -51,7 +51,8 @@ namespace Script {
           break;
       }
       let coat: ƒ.CoatRemissiveTextured = new ƒ.CoatRemissiveTextured(ƒ.Color.CSS("white"), texture);
-      let mat: ƒ.Material = new ƒ.Material("TileMaterial", ƒ.ShaderPhongTextured, coat);
+      let mat: ƒ.Material = new ƒ.Material("TileMaterial", ƒ.ShaderLitTextured, coat);
+      this.node.addComponent(new ƒ.ComponentMaterial(mat));
       cmpMat.material = mat;
     }
 

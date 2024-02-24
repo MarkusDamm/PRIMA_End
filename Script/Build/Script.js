@@ -25,21 +25,21 @@ var Script;
         }
         static get getDimensions() { return AttributeUp.dimensions; }
         get getPowerBoost() { return this.powerBoost; }
-        setupNode(_event) {
+        async setupNode(_event) {
             let cmpMat = this.node.getComponent(ƒ.ComponentMaterial);
             let texture = new ƒ.TextureImage();
             switch (this.boostKind) {
                 case BoostKind.Speed:
-                    texture.load(AttributeUp.speedTextureSource);
+                    await texture.load(AttributeUp.speedTextureSource);
                     break;
                 case BoostKind.Health:
-                    texture.load(AttributeUp.healthTextureSource);
+                    await texture.load(AttributeUp.healthTextureSource);
                     break;
                 case BoostKind.Power:
-                    texture.load(AttributeUp.powerTextureSource);
+                    await texture.load(AttributeUp.powerTextureSource);
                     break;
                 case BoostKind.AttackSpeed:
-                    texture.load(AttributeUp.attackSpeedTextureSource);
+                    await texture.load(AttributeUp.attackSpeedTextureSource);
                     this.powerBoost[this.boostKind] = -50; // generic number for reducing the time between attacks
                     break;
                 default:
@@ -47,7 +47,8 @@ var Script;
                     break;
             }
             let coat = new ƒ.CoatRemissiveTextured(ƒ.Color.CSS("white"), texture);
-            let mat = new ƒ.Material("TileMaterial", ƒ.ShaderPhongTextured, coat);
+            let mat = new ƒ.Material("TileMaterial", ƒ.ShaderLitTextured, coat);
+            this.node.addComponent(new ƒ.ComponentMaterial(mat));
             cmpMat.material = mat;
         }
         /**
@@ -454,7 +455,7 @@ var Script;
         powerUp.addComponent(new ƒ.ComponentTransform());
         powerUp.mtxLocal.translation = _event.detail._sourcePos;
         powerUp.addComponent(new ƒ.ComponentMesh(new ƒ.MeshSprite("meshPowerUp")));
-        powerUp.addComponent(new ƒ.ComponentMaterial(new ƒ.Material("matPowerUp", ƒ.ShaderLitTextured)));
+        // powerUp.addComponent(new ƒ.ComponentMaterial(new ƒ.Material("matPowerUp", ƒ.ShaderLitTextured)))
         powerUp.addComponent(new Script.AttributeUp());
         hdlCreation(powerUp, Script.powerUps);
     }

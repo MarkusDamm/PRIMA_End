@@ -281,7 +281,7 @@ namespace Script {
     powerUp.addComponent(new ƒ.ComponentTransform());
     powerUp.mtxLocal.translation = _event.detail._sourcePos;
     powerUp.addComponent(new ƒ.ComponentMesh(new ƒ.MeshSprite("meshPowerUp")))
-    powerUp.addComponent(new ƒ.ComponentMaterial(new ƒ.Material("matPowerUp", ƒ.ShaderLitTextured)))
+    // powerUp.addComponent(new ƒ.ComponentMaterial(new ƒ.Material("matPowerUp", ƒ.ShaderLitTextured)))
     powerUp.addComponent(new AttributeUp());
     hdlCreation(powerUp, powerUps);
   }
