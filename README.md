@@ -7,9 +7,9 @@ Winter 2023/2024
 
 Created in the course PRIMA from Prof. Jirka Dell'Oro-Friedl at Furtwangen University.
 
-### [Play here](MarkusDamm.github.io/PRIMA_End/index.html)
+### [Play here](https://MarkusDamm.github.io/PRIMA_End/index.html)
 
-### [Code is here](github.com/MarkusDamm/PRIMA_End/tree/master/Script/Source)
+### [Code is here](https://github.com/MarkusDamm/PRIMA_End/tree/master/Script/Source)
 
 ### [The Documentation](https://github.com/MarkusDamm/PRIMA_End/blob/master/Documentation/DesignDoc.pdf)
 
