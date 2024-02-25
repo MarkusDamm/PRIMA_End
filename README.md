@@ -5,7 +5,7 @@ MKB 7
 
 Winter 2023/2024
 
-Created in the course PRIMA from Prof. Jirka Dell'Oro-Friedl at Furtwangen University.
+Created in the course [PRIMA](https://github.com/JirkaDellOro/Prima) from Prof. Jirka Dell'Oro-Friedl at Furtwangen University.
 
 ### [Play here](https://MarkusDamm.github.io/PRIMA_End/index.html)
 
